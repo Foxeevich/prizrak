@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'" />
+<title>Prizrak — узел-тайник</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; font-family: -apple-system, Segoe UI, Roboto, sans-serif; background: #0b1219; color: #e6edf3; }
+  .wrap { padding: 22px; }
+  h1 { font-size: 18px; margin: 0 0 2px; }
+  .sub { color: #8b98a5; font-size: 12px; margin-bottom: 16px; }
+  .badge { display:inline-block; padding:3px 9px; border-radius:10px; font-size:12px; font-weight:600; }
+  .on { background:#173a26; color:#4ade80; } .off { background:#3a1717; color:#f87171; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px; }
+  .card { background:#131c26; border:1px solid #1e2a36; border-radius:12px; padding:12px 14px; }
+  .k { color:#8b98a5; font-size:11px; text-transform:uppercase; letter-spacing:.04em; }
+  .v { font-size:20px; font-weight:700; margin-top:4px; }
+  .mono { font-family: ui-monospace, Menlo, monospace; font-size:12px; word-break:break-all; }
+  .foot { margin-top:16px; color:#66727e; font-size:11px; line-height:1.5; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>👻 Prizrak — узел-тайник <span id="st" class="badge off">офлайн</span></h1>
+    <div class="sub">Зашифрованное промежуточное хранилище (store-and-forward). Содержимое узлу недоступно.</div>
+    <div class="card"><div class="k">ID узла (публичный ключ)</div><div id="nodeId" class="mono">…</div></div>
+    <div class="grid">
+      <div class="card"><div class="k">Слушает</div><div id="addr" class="v" style="font-size:15px">…</div></div>
+      <div class="card"><div class="k">Аптайм</div><div id="uptime" class="v">…</div></div>
+      <div class="card"><div class="k">Блобов хранится</div><div id="blobs" class="v">0</div></div>
+      <div class="card"><div class="k">Занято на диске</div><div id="bytes" class="v">0</div></div>
+      <div class="card"><div class="k">Ящиков</div><div id="mailboxes" class="v">0</div></div>
+      <div class="card"><div class="k">Доставлено (ACK)</div><div id="acks" class="v">0</div></div>
+    </div>
+    <div id="dir" class="foot"></div>
+    <div class="foot">Данные полностью зашифрованы отправителем. Узел никогда не может их прочитать.
+      Он лишь временно хранит и отдаёт зашифрованные конверты, пока получатель их не заберёт.</div>
+  </div>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const fmtBytes = (n) => { if (n < 1024) return n + ' Б'; if (n < 1048576) return (n/1024).toFixed(1) + ' КБ'; if (n < 1073741824) return (n/1048576).toFixed(1) + ' МБ'; return (n/1073741824).toFixed(2) + ' ГБ'; };
+  const fmtUp = (ms) => { const s = Math.floor(ms/1000); const d=Math.floor(s/86400), h=Math.floor(s%86400/3600), m=Math.floor(s%3600/60); return (d?d+'д ':'') + (h?h+'ч ':'') + m + 'м'; };
+  async function tick() {
+    try {
+      const s = await window.dd.status();
+      if (!s) { $('st').className='badge off'; $('st').textContent='офлайн'; return; }
+      $('st').className='badge on'; $('st').textContent='онлайн';
+      $('nodeId').textContent = s.nodeId;
+      $('addr').textContent = s.host + ':' + s.port;
+      $('uptime').textContent = fmtUp(s.uptimeMs);
+      $('blobs').textContent = s.blobs;
+      $('bytes').textContent = fmtBytes(s.bytes);
+      $('mailboxes').textContent = s.mailboxes;
+      $('acks').textContent = s.acks;
+      $('dir').textContent = 'Хранилище: ' + s.dataDir;
+    } catch {}
+  }
+  tick(); setInterval(tick, 2000);
+</script>
+</body>
+</html>

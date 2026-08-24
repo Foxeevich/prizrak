@@ -1,0 +1,7 @@
+{
+  "name": "@prizrak/crypto",
+  "version": "2.0.0",
+  "type": "module",
+  "main": "src/index.js",
+  "description": "E2E-криптография Prizrak: OpenPGP-идентичность + Double Ratchet"
+}

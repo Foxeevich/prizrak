@@ -1,0 +1,13 @@
+{
+  "name": "@prizrak/vpn",
+  "version": "2.0.0",
+  "type": "module",
+  "main": "src/node.js",
+  "description": "Prizrak VPN — стелс-туннель поверх транспорта Призрака (выходные узлы + клиент)",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node test/shadow.mjs && node test/lichina.mjs && node test/estafeta.mjs && node test/breath.mjs && node test/flock.mjs && node test/countries.mjs && node test/economy.mjs && node test/engine.mjs && node test/health.mjs && node test/relay-integration.mjs && node test/socks-integration.mjs && node test/order-integration.mjs",
+    "selftest": "node bin/prizrak-vpn.mjs selftest",
+    "test:demo": "node test/vpn.mjs"
+  }
+}

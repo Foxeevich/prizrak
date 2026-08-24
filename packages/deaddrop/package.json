@@ -1,0 +1,19 @@
+{
+  "name": "@prizrak/deaddrop",
+  "version": "2.0.0",
+  "type": "module",
+  "description": "Prizrak — узел-тайник (store-and-forward dead-drop relay). Zero-knowledge промежуточное хранилище для доставки конвертов между homeserver'ами, когда прямой путь перерезан ТСПУ.",
+  "main": "src/node.js",
+  "bin": {
+    "prizrak-deaddrop": "src/node.js"
+  },
+  "scripts": {
+    "start": "node src/node.js",
+    "test": "node test/smoke.mjs && node test/registry.mjs && node test/healing.mjs && node test/antienum-6c.mjs && node test/stealth-6d.mjs && node test/hardening-6.mjs && node test/claim-7.mjs"
+  },
+  "dependencies": {
+    "@noble/curves": "^1.8.1",
+    "@noble/hashes": "^1.7.1",
+    "@noble/ciphers": "^1.2.1"
+  }
+}

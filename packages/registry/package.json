@@ -1,0 +1,15 @@
+{
+  "name": "@prizrak/registry",
+  "version": "2.0.0",
+  "type": "module",
+  "main": "src/registry-server.js",
+  "description": "Prizrak group registry — поиск публичных групп федерации (tech.prizrak.im)",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node test/registry.mjs"
+  },
+  "dependencies": {
+    "@noble/curves": "^1.8.1",
+    "@noble/hashes": "^1.7.1"
+  }
+}

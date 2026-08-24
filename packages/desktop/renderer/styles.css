@@ -1,0 +1,712 @@
+:root {
+  --bg: #0f1115; --panel: #171a21; --panel2: #1e222b; --line: #262b36;
+  --text: #e7e9ee; --muted: #8b93a7; --accent: #4f8cff; --accent2: #2f6bd6;
+  --mine: #2b5278; --other: #202531; --danger: #ff6b6b; --ok: #43c07a;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; font-family: -apple-system, "Segoe UI", Roboto, Inter, sans-serif;
+  background: var(--bg); color: var(--text); height: 100vh; overflow: hidden;
+}
+.hidden { display: none !important; }
+button { cursor: pointer; border: none; border-radius: 8px; padding: 9px 14px; font-size: 14px; color: var(--text); background: var(--panel2); transition: .15s; }
+button:hover { filter: brightness(1.15); }
+button:disabled { opacity: .5; cursor: default; }
+.primary { background: var(--accent); color: #fff; }
+.primary:hover { background: var(--accent2); }
+.ghost-btn { background: transparent; border: 1px solid var(--line); }
+input { width: 100%; padding: 10px 12px; margin: 4px 0 2px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--text); font-size: 14px; outline: none; }
+input:focus { border-color: var(--accent); }
+label { font-size: 12px; color: var(--muted); margin-top: 10px; display: block; }
+.hint { font-size: 12px; color: var(--muted); margin: 2px 0; }
+.error { color: var(--danger); font-size: 13px; margin-top: 10px; min-height: 18px; }
+
+/* Auth */
+.auth { height: 100vh; display: flex; align-items: center; justify-content: center; background: radial-gradient(1200px 600px at 50% -10%, #1b2130, var(--bg)); }
+.auth-card { width: 380px; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 26px; box-shadow: 0 20px 60px rgba(0,0,0,.4); }
+#serverSel { width: 100%; padding: 10px 12px; margin: 4px 0 2px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel2); color: var(--text); font-size: 14px; outline: none; }
+#serverSel:focus { border-color: var(--accent); }
+.uid-row { display: flex; align-items: center; gap: 6px; }
+.uid-row #login { flex: 1; }
+.uid-domain { color: var(--muted); font-size: 13px; white-space: nowrap; font-family: ui-monospace, monospace; }
+#uidPreview { min-height: 14px; color: var(--accent); font-family: ui-monospace, monospace; }
+.auth-restore { margin-top: 12px; text-align: center; font-size: 13px; }
+.auth-restore a { color: var(--muted); text-decoration: none; }
+.auth-restore a:hover { color: var(--accent); text-decoration: underline; }
+.seed-words { font-family: ui-monospace, monospace; font-size: 15px; line-height: 1.9; letter-spacing: .3px; background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin: 10px 0; word-spacing: 6px; color: var(--text); user-select: all; }
+/* MD6: список устройств */
+.dev-list { margin: 10px 0; display: flex; flex-direction: column; gap: 8px; max-height: 360px; overflow: auto; }
+.dev-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel2); }
+.dev-ic { font-size: 18px; flex: 0 0 auto; }
+.dev-meta { flex: 1; min-width: 0; }
+.dev-name { font-size: 14px; font-weight: 600; }
+.dev-sub { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dev-sub .mono { font-family: ui-monospace, monospace; }
+.dev-cur { font-size: 12px; color: var(--ok); white-space: nowrap; }
+.dev-revoke { color: var(--danger); border-color: var(--danger); padding: 6px 10px; font-size: 12px; }
+.brand { font-size: 26px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.ghost { filter: drop-shadow(0 0 8px rgba(79,140,255,.6)); }
+.subtitle { color: var(--muted); font-size: 13px; margin-bottom: 8px; }
+.row { display: flex; gap: 10px; margin-top: 16px; }
+.row button { flex: 1; }
+
+/* App layout */
+.app { display: grid; grid-template-columns: 300px 1fr; height: 100vh; }
+.sidebar { background: var(--panel); border-right: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; height: 100vh; }
+.panel { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.me { padding: 14px 16px; border-bottom: 1px solid var(--line); }
+.me-row { display: flex; align-items: center; gap: 10px; }
+.me-ava { width: 40px; height: 40px; border-radius: 50%; background: var(--panel2); border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 18px; overflow: hidden; flex: 0 0 auto; }
+.me-ava img { width: 100%; height: 100%; object-fit: cover; }
+.me-info { overflow: hidden; }
+.me-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.me-fp { font-size: 11px; color: var(--muted); font-family: ui-monospace, monospace; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wallet-hint { margin-left: auto; font-size: 12px; color: var(--muted); }
+
+/* Нижнее меню */
+.bottom-nav { display: flex; height: 58px; background: var(--panel); border-top: 1px solid var(--line); flex: 0 0 auto; }
+/* Зелёная плашка обновления (как «Update Telegram») — заменяет нижнюю навигацию */
+.update-bar { display: flex; align-items: center; justify-content: center; gap: 8px; height: 58px; flex: 0 0 auto; width: 100%; border: none; border-radius: 0; color: #fff; font-size: 14px; font-weight: 600; letter-spacing: .2px; background: linear-gradient(90deg, #2fbf5a, #23a34a); transition: filter .15s; }
+.update-bar:hover { filter: brightness(1.07); }
+.update-bar .upd-ic { font-size: 16px; }
+.update-bar.downloading { background: linear-gradient(90deg, #3aa0e0, #2f7fd0); cursor: default; }
+.update-bar.downloading:hover { filter: none; }
+.nav-btn { flex: 1; background: transparent; border: none; border-radius: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--muted); padding: 6px 0; }
+.nav-btn .ic { font-size: 20px; line-height: 1; filter: grayscale(1) opacity(.75); }
+.nav-btn .nl { font-size: 11px; }
+.nav-btn:hover { background: var(--panel2); }
+.nav-btn.active { color: var(--accent); }
+.nav-btn.active .ic { filter: none; }
+.actions { display: flex; gap: 6px; padding: 10px; border-bottom: 1px solid var(--line); }
+.actions button { flex: 1; font-size: 12px; padding: 8px 6px; }
+.conv-list { flex: 1; overflow-y: auto; }
+.conv { padding: 12px 16px; border-bottom: 1px solid var(--line); cursor: pointer; display: flex; gap: 10px; align-items: center; }
+.conv:hover { background: var(--panel2); }
+.conv.active { background: var(--panel2); }
+.conv .avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--panel2); display: flex; align-items: center; justify-content: center; font-size: 16px; flex: 0 0 auto; border: 1px solid var(--line); }
+.conv .meta { overflow: hidden; }
+.conv .name { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.conv .last { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.badge { font-size: 10px; padding: 1px 6px; border-radius: 6px; background: var(--panel); border: 1px solid var(--line); color: var(--muted); margin-left: auto; }
+
+/* Chat */
+.chat { display: flex; flex-direction: column; height: 100vh; min-height: 0; position: relative; }
+.chat.drag-over .messages { outline: 3px dashed var(--accent); outline-offset: -12px; }
+.chat-header { padding: 14px 18px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; background: var(--panel); }
+.chat-title { font-weight: 600; }
+.messages { flex: 1; overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 8px; background: linear-gradient(180deg, var(--bg), #0c0e12); }
+.msg { max-width: 68%; padding: 8px 12px; border-radius: 12px; font-size: 14px; line-height: 1.35; word-wrap: break-word; }
+.msg .who { font-size: 11px; color: var(--accent); margin-bottom: 2px; }
+.msg .mtext { white-space: pre-wrap; overflow-wrap: anywhere; }
+.msg .time { font-size: 10px; color: var(--muted); margin-top: 3px; text-align: right; }
+.msg.mine { align-self: flex-end; background: var(--mine); border-bottom-right-radius: 4px; }
+.msg.other { align-self: flex-start; background: var(--other); border-bottom-left-radius: 4px; }
+.msg.system { align-self: center; background: transparent; color: var(--muted); font-size: 12px; }
+.composer { display: flex; gap: 10px; padding: 12px 16px; border-top: 1px solid var(--line); background: var(--panel); align-items: flex-end; }
+.composer input { margin: 0; }
+#msgInput { flex: 1; width: 100%; margin: 0; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--text); font: inherit; font-size: 14px; line-height: 1.35; outline: none; resize: none; max-height: 160px; overflow-y: auto; }
+#msgInput:focus { border-color: var(--accent); }
+.composer button { flex: 0 0 auto; }
+
+/* Modal */
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,.55); display: flex; align-items: center; justify-content: center; z-index: 60; }
+.modal-card { width: 360px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 20px; }
+.modal-title { font-weight: 600; margin-bottom: 8px; }
+
+/* v1.2 — кошелёк, иконки, звонки */
+.wallet { margin-top: 10px; display: flex; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel2); cursor: pointer; }
+.wallet:hover { filter: brightness(1.12); }
+#ghostBalance { font-size: 14px; font-weight: 600; color: #cbd6ff; }
+.wallet button { padding: 2px 9px; font-size: 14px; line-height: 1; }
+button.icon { background: transparent; padding: 6px 8px; font-size: 17px; border-radius: 8px; }
+button.icon:hover { background: var(--panel2); }
+button.danger { background: var(--danger); color: #fff; }
+.chat-actions { display: flex; gap: 4px; align-items: center; }
+
+.msg .att { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.msg .att .ic { font-size: 20px; }
+.msg audio { width: 240px; height: 34px; }
+.msg .gift { font-size: 15px; }
+
+/* Панель звонка */
+.call-panel { position: fixed; inset: 0; background: rgba(6,8,12,.92); display: flex; align-items: center; justify-content: center; z-index: 50; }
+.call-inner { text-align: center; width: min(720px, 92vw); }
+.call-title { font-size: 20px; font-weight: 600; margin-bottom: 12px; }
+#remoteVideo, #remoteCanvas { width: 100%; max-height: 60vh; background: #000; border-radius: 12px; border: 1px solid var(--line); }
+.call-status { color: var(--muted); margin: 14px 0; }
+.call-buttons { display: flex; gap: 12px; justify-content: center; }
+.call-buttons button { padding: 12px 20px; font-size: 15px; }
+
+/* v1.4 — профили и аватары */
+.avatar-edit { display: flex; align-items: center; gap: 12px; margin: 6px 0 4px; }
+.avatar-lg { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; background: var(--panel2); border: 1px solid var(--line); }
+.chk { display: flex; align-items: center; gap: 8px; margin-top: 10px; color: var(--muted); font-size: 13px; }
+.chk input { width: auto; margin: 0; }
+.conv .avatar img, .avatar-lg[src=''] { }
+.conv .avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+#btnMyProfile { padding: 2px 8px; }
+#vwBio { margin: 8px 0; }
+
+/* v1.6 — выделение и роли */
+.msg.selectable { cursor: pointer; }
+.msg.selected { outline: 2px solid var(--accent); outline-offset: 1px; }
+.members { max-height: 340px; overflow-y: auto; margin: 6px 0; }
+.member { display: flex; align-items: center; gap: 8px; padding: 8px 4px; border-bottom: 1px solid var(--line); }
+.member .mid { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+.member .rl { font-size: 11px; color: var(--muted); padding: 1px 6px; border: 1px solid var(--line); border-radius: 6px; }
+.member button { padding: 4px 8px; font-size: 12px; }
+
+/* v1.8 — верификация */
+.safety { margin: 12px 0; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: #12203a33; }
+.safety-head { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+.sn { font-family: ui-monospace, monospace; font-size: 15px; letter-spacing: 1px; word-break: break-all; color: #cbd6ff; }
+.qr { display: block; width: 160px; height: 160px; margin: 10px auto 4px; border-radius: 10px; }
+.vstatus { font-size: 11px; padding: 1px 8px; border-radius: 6px; margin-left: 6px; }
+.vstatus.verified { background: #163a28; color: var(--ok); }
+.vstatus.unverified { background: #2a2f3a; color: var(--muted); }
+.vstatus.changed { background: #3a1620; color: var(--danger); }
+.conv .name .vmark, .chat-title .vmark { color: var(--ok); margin-left: 4px; }
+
+/* v1.10 — светлая тема, поиск, настройки */
+body.light {
+  --bg:#f2f4f8; --panel:#ffffff; --panel2:#eef1f6; --line:#dfe3ea;
+  --text:#1a1d24; --muted:#6b7280; --accent:#2f6bd6; --accent2:#2457b0;
+  --mine:#d3e4ff; --other:#eef1f6; --danger:#d33; --ok:#1a9e5c;
+}
+body.light .messages { background: linear-gradient(180deg, #f2f4f8, #e9edf3); }
+body.light .msg.mine { color:#0b2340; }
+.chat-search { margin: 8px 10px; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel2); color: var(--text); font-size: 13px; }
+.seg { gap: 6px; }
+.seg-btn { flex: 1; border: 1px solid var(--line); background: transparent; }
+.seg-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* v1.11 — экран настроек (как в Telegram) и «Мои призраки» */
+.settings-screen { position: fixed; inset: 0; background: var(--bg); z-index: 40; display: flex; justify-content: center; overflow-y: auto; }
+.settings-card { width: min(560px, 100%); padding: 18px 18px 60px; }
+/* Двухпанельные настройки (слева список, справа секция) */
+.settings-screen.two-pane { justify-content: flex-start; overflow: hidden; }
+.settings-screen.two-pane .set-master { width: 320px; flex: 0 0 auto; border-right: 1px solid var(--line); background: var(--panel); height: 100vh; overflow-y: auto; padding: 8px 12px 20px; }
+.settings-screen.two-pane .set-detail { flex: 1; height: 100vh; overflow-y: auto; padding: 26px 28px; background: linear-gradient(180deg, var(--bg), #0c0e12); }
+.set-nav { display: flex; flex-direction: column; margin-top: 10px; }
+.set-nav-row { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: transparent; border: none; border-radius: 10px; padding: 11px 12px; font-size: 15px; }
+.set-nav-row:hover { background: var(--panel2); }
+.set-nav-row.active { background: var(--panel2); }
+.set-nav-row .lbl { flex: 1; }
+.set-nav-row .val { color: var(--muted); font-size: 13px; margin-right: 2px; }
+.set-nav-row .chev { color: var(--muted); font-size: 18px; }
+.set-sec { max-width: 620px; }
+.set-sec.hidden { display: none; }
+.set-sec-t { font-size: 20px; font-weight: 700; margin: 0 2px 14px; }
+.set-card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; margin-bottom: 16px; }
+.set-card .set-row { border: none; border-radius: 0; margin: 0; }
+.set-card .set-row + .set-row { border-top: 1px solid var(--line); }
+.set-row.lang-pick .lang-check { color: var(--accent); opacity: 0; font-weight: 700; }
+.set-row.lang-pick.on .lang-check { opacity: 1; }
+.settings-head { display: flex; align-items: center; gap: 12px; padding: 10px 6px 18px; border-bottom: 1px solid var(--line); }
+.settings-ava { width: 56px; height: 56px; border-radius: 50%; background: var(--panel2); border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 24px; overflow: hidden; flex: 0 0 auto; }
+.settings-ava img { width: 100%; height: 100%; object-fit: cover; }
+.settings-who { flex: 1; overflow: hidden; }
+.settings-name { font-weight: 700; font-size: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.settings-id { font-size: 12px; color: var(--muted); font-family: ui-monospace, monospace; }
+.settings-list { display: flex; flex-direction: column; margin-top: 12px; }
+.set-group-title { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; margin: 18px 6px 6px; }
+.set-row { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 13px 14px; margin-bottom: 8px; font-size: 15px; }
+.set-row:hover { background: var(--panel2); }
+.set-row.static { cursor: default; }
+.set-row.static:hover { background: var(--panel); }
+.set-row .ic { font-size: 18px; width: 24px; text-align: center; flex: 0 0 auto; }
+.set-row .lbl { flex: 1; }
+.set-row .val { color: var(--muted); font-size: 13px; margin-right: 4px; }
+.set-row .chev { color: var(--muted); font-size: 18px; }
+.set-row.danger-row { color: var(--danger); }
+.seg.mini { gap: 6px; margin: 0; }
+.seg.mini .seg-btn { padding: 6px 10px; font-size: 12px; }
+/* Переключатель-«тумблер» */
+.switch { appearance: none; -webkit-appearance: none; width: 42px; height: 24px; border-radius: 999px; background: var(--line); position: relative; cursor: pointer; transition: .15s; flex: 0 0 auto; margin: 0; }
+.switch:checked { background: var(--accent); }
+.switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%; background: #fff; transition: .15s; }
+.switch:checked::after { transform: translateX(18px); }
+
+/* «Мои призраки» */
+.ghosts-card { width: 380px; text-align: center; position: relative; }
+.modal-x { position: absolute; top: 12px; right: 12px; background: transparent; color: var(--muted); padding: 4px 8px; font-size: 15px; }
+.ghosts-hero { font-size: 60px; line-height: 1; margin: 6px 0 4px; filter: drop-shadow(0 6px 18px rgba(79,140,255,.5)); }
+.ghosts-title { font-size: 20px; font-weight: 700; }
+.ghosts-sub { color: var(--muted); font-size: 13px; margin: 6px 16px 14px; }
+.ghosts-balance { background: var(--panel2); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
+.gb-num { font-size: 30px; font-weight: 700; color: #cbd6ff; }
+.gb-cap { color: var(--muted); font-size: 12px; margin-top: 2px; }
+button.wide { width: 100%; padding: 12px; margin-bottom: 8px; }
+.ghosts-note { margin-top: 10px; }
+
+/* v1.12 — загрузка файлов с прогрессом (как в Telegram) */
+.msg.uploading { min-width: 240px; }
+.up-row { display: flex; align-items: center; gap: 10px; }
+.up-ring { position: relative; width: 40px; height: 40px; flex: 0 0 auto; }
+.up-ring svg { transform: rotate(-90deg); }
+.up-ring .track { stroke: rgba(255,255,255,.28); }
+.up-ring .bar { stroke: #fff; stroke-linecap: round; transition: stroke-dashoffset .2s; }
+.up-ring .x { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; color: #fff; }
+.up-meta { overflow: hidden; }
+.up-name { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.up-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.up-fail { color: var(--danger); }
+
+/* v1.12.4 — выделение текста, контекстное меню, скачивание вложений */
+.messages { user-select: text; }
+.msg .mtext, .msg .who, .msg .time, .att-name { user-select: text; }
+.msg .mtext a.lnk { color: #7db0ff; text-decoration: underline; cursor: pointer; word-break: break-all; }
+.msg.mine .mtext a.lnk { color: #dbe7ff; }
+.msg .mtext a.lnk:hover { filter: brightness(1.12); }
+.msg.system { user-select: none; display: flex; align-items: center; gap: 8px; }
+.sys-x { cursor: pointer; opacity: .5; font-size: 11px; }
+.sys-x:hover { opacity: 1; color: var(--danger); }
+
+/* Контекстное меню */
+.ctx-menu { position: fixed; z-index: 90; min-width: 190px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 6px; box-shadow: 0 12px 40px rgba(0,0,0,.5); }
+.ctx-item { padding: 8px 12px; border-radius: 7px; font-size: 14px; cursor: pointer; }
+.ctx-item:hover { background: var(--panel2); }
+.ctx-item.danger { color: var(--danger); }
+.ctx-sep { height: 1px; background: var(--line); margin: 5px 4px; }
+/* Ряд реакций над контекстным меню (как в Telegram) */
+.ctx-reactions { display: flex; gap: 2px; padding: 4px; margin: 0 0 6px; background: var(--panel2); border: 1px solid var(--line); border-radius: 22px; max-width: 320px; flex-wrap: wrap; justify-content: center; }
+.ctx-reactions .ctx-rx { background: transparent; border: none; font-size: 22px; padding: 3px 5px; border-radius: 50%; line-height: 1; transition: .12s; }
+.ctx-reactions .ctx-rx:hover { background: var(--panel); transform: scale(1.2); }
+.ctx-reactions .ctx-rx.on { background: rgba(79,140,255,.28); }
+.ctx-reactions .ctx-rx.paid { filter: drop-shadow(0 0 4px rgba(240,165,61,.8)); }
+
+/* Вложение-файл + скачивание */
+.att.file { display: flex; align-items: center; gap: 10px; }
+.att.file .att-meta { flex: 1; overflow: hidden; }
+.att-name { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.att-size { font-size: 11px; color: var(--muted); margin-top: 1px; }
+.dl-ic { flex: 0 0 auto; width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,.14); display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; }
+.dl-ic:hover { background: rgba(255,255,255,.26); }
+.up-ring.sm { width: 34px; height: 34px; }
+
+/* v1.12.4 — контекстное меню с иконками + режим выделения (как в Telegram) */
+.ctx-item { display: flex; align-items: center; gap: 10px; }
+.ctx-item .ci { width: 18px; text-align: center; font-size: 14px; }
+
+.sel-bar { display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; border-top: 1px solid var(--line); background: var(--panel); }
+.sel-ic { background: transparent; font-size: 20px; padding: 6px 10px; border-radius: 10px; }
+.sel-ic:hover { background: var(--panel2); }
+.sel-count { color: var(--muted); font-size: 14px; }
+
+.msg.selmode { padding-right: 34px; position: relative; }
+.msg .sel-check { position: absolute; top: 50%; right: 8px; transform: translateY(-50%); width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--muted); display: flex; align-items: center; justify-content: center; font-size: 12px; color: #fff; }
+.msg .sel-check.on { background: var(--accent); border-color: var(--accent); }
+.msg.selmode { cursor: pointer; }
+.msg.selmode .mtext { user-select: none; }
+
+/* v1.13 — метки чатов (закреплён/без звука), архив */
+.conv-right { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+.cmark { font-size: 11px; opacity: .8; }
+.conv.archive-row { background: var(--panel2); }
+
+/* v1.13.1 — галочки доставки/прочтения */
+.time .ticks { margin-left: 6px; display: inline-flex; vertical-align: middle; }
+.tk { font-size: 12px; line-height: 1; }
+.tk.grey { color: var(--muted); }
+.tk.blue { color: #5ec2ff; }
+.tk2 { margin-left: -5px; }
+
+/* ===== Экран «Баланс Призраков» ===== */
+.gs-hero { text-align: center; padding: 22px 16px 6px; }
+.gs-bal { font-size: 40px; font-weight: 800; letter-spacing: .5px; }
+.gs-cap { color: var(--muted); font-size: 13px; margin-top: 4px; }
+.gs-avail { padding: 6px 4px 10px; }
+.gs-availnum { font-size: 26px; font-weight: 700; margin-bottom: 10px; }
+.primary.wide, button.wide { width: 100%; }
+.gs-ops { display: flex; flex-direction: column; }
+.gs-op { display: flex; align-items: center; gap: 12px; padding: 11px 6px; border-bottom: 1px solid var(--line); cursor: pointer; transition: .12s; border-radius: 8px; }
+.gs-op:hover { background: var(--panel2); }
+.gs-op-ic { width: 40px; height: 40px; flex: 0 0 auto; border-radius: 50%; background: var(--panel2); border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 19px; }
+.gs-op-meta { flex: 1; min-width: 0; }
+.gs-op-title { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gs-op-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.gs-op-amt { font-size: 15px; font-weight: 700; flex: 0 0 auto; white-space: nowrap; }
+.gs-op-amt.pos { color: var(--ok); }
+.gs-op-amt.neg { color: var(--danger); }
+
+/* ===== Модалка детали операции ===== */
+.op-card { width: 340px; text-align: center; }
+.op-hero { width: 80px; height: 80px; margin: 6px auto 10px; border-radius: 50%; background: var(--panel2); border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 38px; }
+.op-amount { font-size: 30px; font-weight: 800; }
+.op-amount.pos { color: var(--ok); }
+.op-amount.neg { color: var(--danger); }
+.op-desc { color: var(--muted); font-size: 13px; margin: 4px 0 16px; }
+.op-table { text-align: left; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; margin-bottom: 16px; }
+.op-row { display: flex; justify-content: space-between; gap: 12px; padding: 11px 13px; border-bottom: 1px solid var(--line); font-size: 13px; }
+.op-row:last-child { border-bottom: none; }
+.op-k { color: var(--muted); flex: 0 0 auto; }
+.op-v { text-align: right; word-break: break-word; min-width: 0; }
+.op-v.mono, .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; }
+
+/* ===== Голосовые сообщения (волна + плеер, как в Telegram) ===== */
+.msg .voice { display: flex; align-items: center; gap: 11px; min-width: 210px; }
+.vplay { flex: 0 0 auto; width: 38px; height: 38px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 15px; display: flex; align-items: center; justify-content: center; padding: 0; line-height: 1; }
+.vplay:hover { background: var(--accent2); }
+.msg.mine .vplay { background: #fff; color: var(--mine); }
+.vbody { flex: 1; min-width: 0; }
+.vwave { position: relative; height: 24px; cursor: pointer; }
+.vbars { position: absolute; inset: 0; display: flex; align-items: center; gap: 2px; overflow: hidden; }
+.vbar { flex: 1; min-width: 2px; border-radius: 2px; background: var(--muted); opacity: .55; }
+.msg.mine .vbar { background: #cfe0ff; opacity: .5; }
+.vfill { pointer-events: none; clip-path: inset(0 100% 0 0); }
+.vfill .vbar { background: var(--accent); opacity: 1; }
+.msg.mine .vfill .vbar { background: #fff; opacity: 1; }
+.vmeta { display: flex; align-items: center; gap: 5px; margin-top: 3px; font-size: 11px; color: var(--muted); }
+.msg.mine .vmeta { color: #cfe0ff; }
+.vmeta .ic { font-size: 11px; opacity: .8; }
+.btnmic.rec, #btnVoice.rec { color: var(--danger); animation: recpulse 1s infinite; }
+@keyframes recpulse { 0%,100% { opacity: 1; } 50% { opacity: .45; } }
+
+/* ===== Счётчик непрочитанных на чатах ===== */
+.unread { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--accent); color: #fff; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; line-height: 1; }
+.unread.muted { background: var(--muted); color: var(--panel); }
+
+/* ===== Экран «Информация о канале/группе» ===== */
+.ri-hero { text-align: center; padding: 18px 16px 8px; }
+.ri-ava { width: 96px; height: 96px; margin: 0 auto 12px; border-radius: 50%; background: var(--panel2); border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 44px; overflow: hidden; }
+.ri-ava img { width: 100%; height: 100%; object-fit: cover; }
+.ri-name { font-size: 21px; font-weight: 700; }
+.ri-sub { color: var(--muted); font-size: 13px; margin-top: 3px; }
+.ri-actions { display: flex; gap: 10px; padding: 12px 4px; }
+.ri-act { flex: 1; background: var(--panel2); border: 1px solid var(--line); border-radius: 12px; padding: 12px 6px; display: flex; flex-direction: column; align-items: center; gap: 6px; color: var(--accent); font-size: 12px; }
+.ri-act:hover { background: var(--panel); }
+.ri-act .ri-ic { font-size: 18px; }
+.ri-block { margin-top: 12px; background: var(--panel2); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+.ri-block-t { color: var(--accent); font-size: 12px; margin-bottom: 6px; }
+.ri-desc { font-size: 14px; white-space: pre-wrap; word-break: break-word; }
+.ri-link-row { display: flex; align-items: center; gap: 8px; }
+.ri-link { flex: 1; color: var(--accent); font-size: 12px; word-break: break-all; }
+.ri-foot { margin-top: 18px; }
+.danger-btn { background: transparent; border: 1px solid var(--danger); color: var(--danger); }
+.danger-btn:hover { background: rgba(255,107,107,.12); }
+
+/* Композер заблокирован (канал: пишут только админы) */
+.composer-lock { padding: 14px 16px; text-align: center; color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); background: var(--panel); }
+
+/* ===== Картинки-вложения: превью как в Telegram ===== */
+.msg .img-att { position: relative; cursor: pointer; border-radius: 12px; overflow: hidden; max-width: 300px; }
+.img-thumb { display: block; width: 100%; max-height: 340px; object-fit: cover; border-radius: 12px; background: #000; }
+.img-att .img-save { position: absolute; right: 8px; bottom: 8px; width: 30px; height: 30px; border-radius: 50%; background: rgba(0,0,0,.55); display: flex; align-items: center; justify-content: center; font-size: 15px; opacity: 0; transition: .15s; }
+.img-att:hover .img-save { opacity: 1; }
+.img-ph { width: 240px; height: 160px; border-radius: 12px; background: #0b0d11; border: 1px solid var(--line); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--muted); }
+.img-ph .dl-ic { font-size: 22px; }
+.img-ph.loading { cursor: default; }
+.img-pct { font-size: 12px; color: var(--muted); }
+.spin { width: 26px; height: 26px; border: 3px solid var(--line); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.att.file[draggable="true"], .img-att[draggable="true"] { cursor: grab; }
+
+/* ===== Тосты (неблокирующие уведомления вместо alert) ===== */
+.toast-box { position: fixed; right: 16px; bottom: 16px; display: flex; flex-direction: column; gap: 8px; z-index: 90; max-width: 360px; }
+.toast { background: var(--panel2); border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 10px; padding: 11px 14px; font-size: 13px; color: var(--text); box-shadow: 0 8px 24px rgba(0,0,0,.4); white-space: pre-line; word-break: break-word; cursor: pointer; animation: toastIn .18s ease-out; }
+.toast.out { opacity: 0; transform: translateY(6px); transition: .3s; }
+@keyframes toastIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.cf-msg { font-size: 14px; margin: 4px 0 2px; white-space: pre-line; }
+
+/* ===== Шапка чата: аватар + имя + статус ===== */
+.chat-head { display: flex; align-items: center; gap: 11px; min-width: 0; flex: 1; }
+.chat-head:hover .chat-title { text-decoration: underline; text-decoration-color: var(--line); }
+.chat-ava { width: 40px; height: 40px; flex: 0 0 auto; border-radius: 50%; background: var(--panel2); border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 18px; overflow: hidden; }
+.chat-ava img { width: 100%; height: 100%; object-fit: cover; }
+.chat-headmeta { min-width: 0; }
+.chat-status { font-size: 12px; color: var(--muted); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chat-status.online { color: var(--ok); }
+
+/* Прогресс переноса файла между серверами */
+.att-xfer { font-size: 11px; color: var(--accent); margin-top: 2px; }
+.msg.mine .att-xfer { color: #cfe0ff; }
+.xfer-inline { color: #cfe0ff; font-size: 10px; }
+
+/* ── Эмодзи-пикер ─────────────────────────────────────────────────────────── */
+.emoji-panel { position: absolute; left: 12px; right: 12px; bottom: 74px; z-index: 40; height: 300px;
+  background: var(--panel2); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 16px 44px rgba(0,0,0,.5);
+  display: flex; flex-direction: column; overflow: hidden; }
+.emoji-panel.hidden { display: none; }
+.emoji-search { padding: 8px; border-bottom: 1px solid var(--line); }
+.emoji-search input { margin: 0; }
+.emoji-scroll { flex: 1; overflow-y: auto; padding: 6px 8px 10px; }
+.emoji-cat-t { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; margin: 8px 2px 4px; }
+.emoji-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 2px; }
+.emoji-grid button { background: transparent; border: none; border-radius: 8px; padding: 4px 0; font-size: 22px; line-height: 1.2; }
+.emoji-grid button:hover { background: var(--panel); }
+.emoji-tabs { display: flex; gap: 2px; padding: 4px 6px; border-top: 1px solid var(--line); background: var(--panel); }
+.emoji-tabs button { flex: 1; background: transparent; border: none; padding: 6px 0; font-size: 18px; border-radius: 8px; opacity: .8; }
+.emoji-tabs button:hover, .emoji-tabs button.on { background: var(--panel2); opacity: 1; }
+.emoji-empty { text-align: center; color: var(--muted); font-size: 13px; padding: 30px 0; }
+
+/* ── Реакции на постах канала ──────────────────────────────────────────────── */
+.reactions { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+.reactions .rx { display: inline-flex; align-items: center; gap: 4px; background: var(--panel2); border: 1px solid var(--line);
+  border-radius: 14px; padding: 2px 9px; font-size: 13px; line-height: 1.5; cursor: pointer; user-select: none; transition: .12s; }
+.reactions .rx:hover { border-color: var(--accent); }
+.reactions .rx.on { background: rgba(79,140,255,.18); border-color: var(--accent); color: #cfe0ff; }
+.reactions .rx .rx-n { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.reactions .rx.on .rx-n { color: #cfe0ff; }
+.reactions .rx.paid { background: rgba(240,165,61,.16); border-color: #f0a53d; }
+.reactions .rx.paid .rx-n { color: #f0c07d; }
+.reactions .rx.add { color: var(--muted); font-size: 15px; padding: 2px 8px; }
+.msg.mine .reactions { justify-content: flex-end; }
+
+/* всплывающая быстрая панель реакций */
+.rx-pop { position: fixed; z-index: 60; background: var(--panel2); border: 1px solid var(--line); border-radius: 22px;
+  box-shadow: 0 12px 34px rgba(0,0,0,.5); padding: 5px 8px; display: flex; gap: 3px; }
+.rx-pop button { background: transparent; border: none; font-size: 24px; padding: 3px 5px; border-radius: 10px; }
+.rx-pop button:hover { background: var(--panel); transform: scale(1.15); }
+
+/* ── Настройки в стиле Telegram (секции/переключатели) ─────────────────────── */
+.tg-section { margin-top: 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.tg-section.hidden { display: none; }
+.tg-section-t { font-size: 12px; color: var(--muted); padding: 10px 14px 4px; }
+.tg-row { display: flex; align-items: center; gap: 12px; padding: 11px 14px; margin: 0; cursor: pointer; }
+.tg-row + .tg-row { border-top: 1px solid var(--line); }
+.tg-ic { width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 15px; flex: 0 0 auto; }
+.tg-lbl { flex: 1; font-size: 14px; color: var(--text); display: flex; flex-direction: column; }
+.tg-lbl small { color: var(--muted); font-size: 11px; margin-top: 2px; }
+.tg-switch { position: relative; width: 42px; height: 24px; flex: 0 0 auto; }
+.tg-switch input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; z-index: 2; }
+.tg-switch i { position: absolute; inset: 0; background: var(--line); border-radius: 14px; transition: .18s; }
+.tg-switch i::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%; background: #fff; transition: .18s; }
+.tg-switch input:checked + i { background: var(--accent); }
+.tg-switch input:checked + i::after { transform: translateX(18px); }
+
+/* окно выбора количества призраков для платной реакции */
+.paid-amt { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
+.paid-amt button { flex: 1; min-width: 60px; }
+/* Модалка «Отключить уведомления на…» */
+.mute-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 14px 0 6px; }
+.mute-opt { padding: 11px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel2); color: var(--text); font-size: 14px; text-align: center; }
+.mute-opt:hover { background: var(--accent); border-color: transparent; color: #fff; }
+.mute-opt.forever { grid-column: 1 / -1; }
+
+/* ── Плитки-иконки настроек (стиль Telegram) ──────────────────────────────── */
+.set-row .ic.tile { width: 29px; height: 29px; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; font-size: 16px; color: #fff; flex: 0 0 auto; }
+
+/* ── Выбор языка ──────────────────────────────────────────────────────────── */
+.lang-list { display: flex; flex-direction: column; margin: 6px 0; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.lang-row { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: var(--panel2); border: none; border-radius: 0; text-align: left; }
+.lang-row + .lang-row { border-top: 1px solid var(--line); }
+.lang-row:hover { background: var(--panel); }
+.lang-name { flex: 1; font-size: 14px; }
+.lang-native { color: var(--muted); font-size: 12px; }
+.lang-row .lang-check { color: var(--accent); opacity: 0; font-weight: 700; margin-left: 8px; }
+.lang-row.on .lang-check { opacity: 1; }
+
+/* ── Экран настроек канала/группы (Изм.) ──────────────────────────────────── */
+.ghost-btn.accent { color: var(--accent); border-color: transparent; }
+.re-hero { display: flex; justify-content: center; padding: 14px 0 6px; }
+.re-ava { width: 96px; height: 96px; border-radius: 50%; background: var(--panel2); border: 1px solid var(--line); position: relative; overflow: hidden; padding: 0; display: flex; align-items: center; justify-content: center; }
+.re-ava img { width: 100%; height: 100%; object-fit: cover; }
+.re-ava img.hidden { display: none; }
+.re-ava .re-cam { position: absolute; font-size: 26px; opacity: .85; }
+.re-fields { display: flex; flex-direction: column; gap: 8px; margin: 10px 0 4px; }
+.re-fields input { margin: 0; }
+.set-list { margin-top: 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.set-list .set-row { width: 100%; border: none; border-radius: 0; margin: 0; background: transparent; }
+.set-list .set-row + .set-row { border-top: 1px solid var(--line); }
+.set-list .set-row:hover { background: var(--panel2); }
+
+/* ── Модалка «Реакции» ────────────────────────────────────────────────────── */
+.modal-title.center { text-align: center; }
+.react-card { width: 420px; max-width: 94vw; max-height: 88vh; overflow-y: auto; position: relative; }
+.react-toggle { display: flex; align-items: center; gap: 12px; padding: 12px 14px; margin: 10px 0; background: var(--panel2); border: 1px solid var(--line); border-radius: 12px; cursor: pointer; }
+.react-toggle .tg-lbl { flex: 1; }
+.react-hint { font-size: 12px; color: var(--muted); margin: 4px 2px 10px; }
+#reactBody.off { opacity: .4; pointer-events: none; filter: grayscale(.6); }
+.react-box { background: var(--panel2); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.react-emojis { display: flex; flex-wrap: wrap; gap: 4px; padding: 12px; }
+.react-em { background: transparent; border: none; font-size: 24px; padding: 2px 4px; border-radius: 8px; position: relative; }
+.react-em:hover { background: var(--panel); }
+.react-em::after { content: '×'; position: absolute; top: -2px; right: -2px; font-size: 12px; color: var(--danger); opacity: 0; }
+.react-em:hover::after { opacity: 1; }
+.react-add { width: 100%; display: flex; align-items: center; justify-content: space-between; background: transparent; border: none; border-top: 1px solid var(--line); border-radius: 0; padding: 12px 14px; color: var(--accent); }
+.react-add:hover { background: var(--panel); }
+.react-add .chev { color: var(--muted); }
+.react-cap { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; margin: 16px 2px 6px; }
+.react-slider { position: relative; padding: 4px 2px; }
+.react-slider input[type=range] { width: 100%; accent-color: var(--accent); }
+.react-ticks { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); padding: 0 2px 2px; }
+.react-slider .react-em { display: none; }
+
+/* Эмодзи-пикер поверх модалки (добавление реакций в набор) */
+.emoji-panel.over-modal { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 380px; max-width: 92vw; height: 320px; bottom: auto; z-index: 80; }
+
+/* ── Диагностика доставки ─────────────────────────────────────────────────── */
+.diag-list { max-height: 46vh; overflow-y: auto; margin: 8px 0; display: flex; flex-direction: column; gap: 6px; }
+.diag-row { display: flex; align-items: center; gap: 10px; padding: 9px 11px; border-radius: 10px; background: var(--panel2); border: 1px solid var(--line); }
+.diag-row.bad { border-color: #6b2b2b; background: rgba(224,83,61,.12); }
+.diag-row.ok { border-color: #2f5f3a; }
+.diag-ic { font-size: 16px; flex: 0 0 auto; }
+.diag-meta { overflow: hidden; }
+.diag-u { font-size: 13px; font-family: ui-monospace, monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.diag-s { font-size: 12px; color: var(--muted); }
+.diag-row.bad .diag-s { color: #ff9b8f; }
+
+/* ── Участники в стиле Telegram ───────────────────────────────────────────── */
+.members-card { width: 420px; max-width: 94vw; }
+.members { max-height: 56vh; overflow-y: auto; margin: 8px -6px; display: flex; flex-direction: column; }
+.mrow { display: flex; align-items: center; gap: 11px; padding: 8px 10px; border-radius: 10px; cursor: pointer; }
+.mrow:hover { background: var(--panel2); }
+.mrow.banned { opacity: .7; }
+.mava { width: 40px; height: 40px; border-radius: 50%; background: var(--panel2); border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 18px; overflow: hidden; flex: 0 0 auto; }
+.mava img { width: 100%; height: 100%; object-fit: cover; }
+.mmeta { flex: 1; overflow: hidden; }
+.mname { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mstatus { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mstatus.online { color: var(--accent); }
+.mrole { font-size: 11px; padding: 2px 9px; border-radius: 10px; flex: 0 0 auto; white-space: nowrap; }
+.mrole.owner { background: rgba(140,124,255,.2); color: #b9aeff; }
+.mrole.admin { background: rgba(67,192,122,.18); color: #6fe0a0; }
+.mrole.mod { background: rgba(79,140,255,.18); color: #9fc0ff; }
+.mrole.ban { background: rgba(224,83,61,.18); color: #ff9b8f; }
+.ro-row { display: flex; align-items: center; gap: 12px; padding: 10px 10px; margin: 0 0 6px; cursor: pointer; border-bottom: 1px solid var(--line); }
+
+/* Управление группой — списочный стиль как в Telegram */
+.gset-card { max-width: 500px; width: 94vw; padding: 20px 20px 16px; }
+.gset-card .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 2px; text-align: left; }
+.gset-scroll { max-height: 66vh; overflow-y: auto; margin: 10px 0 14px; padding-right: 4px; }
+.gset-sec { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 20px 4px 8px; }
+.gset-sec:first-child { margin-top: 2px; }
+/* Сгруппированный блок строк */
+.gset-group { background: var(--panel2); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.gset-row { display: flex; align-items: center; gap: 12px; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+.gset-group .gset-row:last-child, .gset-group .gset-opt:last-child { border-bottom: none; }
+.gset-row .gr-lbl { font-size: 14.5px; flex: 1; min-width: 0; }
+.gset-row .gr-lbl small { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
+/* iOS-тумблер */
+.tgl { appearance: none; -webkit-appearance: none; width: 44px; height: 26px; border-radius: 13px; background: var(--line); position: relative; cursor: pointer; transition: background .18s; flex: 0 0 auto; margin: 0; padding: 0; }
+.tgl::after { content: ""; position: absolute; top: 2px; left: 2px; width: 22px; height: 22px; border-radius: 50%; background: #fff; transition: transform .18s; box-shadow: 0 1px 3px rgba(0,0,0,.35); }
+.tgl:checked { background: var(--accent); }
+.tgl:checked::after { transform: translateX(18px); }
+/* Тип группы — две опции-карточки */
+.gset-opt { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; border-bottom: 1px solid var(--line); cursor: pointer; }
+.gset-opt input { margin: 3px 0 0; accent-color: var(--accent); width: 18px; height: 18px; flex: 0 0 auto; }
+.gset-opt .go-txt b { font-size: 14.5px; font-weight: 600; }
+.gset-opt .go-txt small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+.gset-sel { width: 100%; padding: 11px 12px; border-radius: 12px; background: var(--panel2); color: var(--text); border: 1px solid var(--line); font-size: 14px; cursor: pointer; }
+.gset-note { color: var(--muted); font-size: 12px; margin: 8px 4px 0; }
+
+/* G5: поиск публичных групп */
+.gsrch-list { max-height: 46vh; overflow-y: auto; margin: 10px 0 4px; display: flex; flex-direction: column; gap: 8px; }
+.gs-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel2); }
+.gs-ic { font-size: 22px; flex: 0 0 auto; }
+.gs-meta { flex: 1; min-width: 0; }
+.gs-name { font-size: 14.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gs-sub { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gs-desc { font-size: 12.5px; color: var(--muted); margin-top: 2px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.gs-join { flex: 0 0 auto; padding: 7px 14px; font-size: 13px; }
+.gsrch-empty { color: var(--muted); font-size: 13.5px; text-align: center; padding: 16px 0; }
+
+/* Инлайн аудио-плеер (.mp3 и пр.) */
+.att.audio { display: flex; align-items: center; gap: 10px; min-width: 240px; max-width: 320px; }
+.aud-btn { flex: 0 0 auto; width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 16px; display: flex; align-items: center; justify-content: center; padding: 0; }
+.aud-btn:hover { background: var(--accent2); }
+.aud-mid { flex: 1; min-width: 0; }
+.aud-name { font-size: 13.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 5px; }
+.aud-bar { height: 4px; border-radius: 2px; background: rgba(255,255,255,.18); cursor: pointer; overflow: hidden; }
+.aud-fill { height: 100%; width: 0; background: var(--accent); border-radius: 2px; }
+.msg.mine .aud-bar { background: rgba(255,255,255,.25); }
+.msg.mine .aud-fill, .msg.mine .aud-btn { background: #fff; }
+.msg.mine .aud-btn { color: var(--mine); }
+.aud-time { font-size: 11px; color: var(--muted); margin-top: 4px; }
+.msg.mine .aud-time { color: rgba(255,255,255,.7); }
+
+/* Поиск по чату */
+.chat-search-bar { display: flex; align-items: center; gap: 8px; padding: 8px 14px; background: var(--panel); border-bottom: 1px solid var(--line); }
+.chat-search-bar .cs-ic { color: var(--muted); }
+.chat-search-bar input { flex: 1; margin: 0; padding: 8px 10px; background: var(--panel2); }
+.cs-count { color: var(--muted); font-size: 12.5px; min-width: 44px; text-align: center; }
+.chat-search-bar .icon { padding: 6px 9px; }
+
+/* Кнопка «в самый низ» */
+.scroll-down { position: absolute; right: 22px; bottom: 86px; width: 44px; height: 44px; border-radius: 50%;
+  background: var(--panel2); border: 1px solid var(--line); color: var(--text); font-size: 20px; line-height: 1;
+  display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 18px rgba(0,0,0,.35); z-index: 5; }
+.scroll-down:hover { background: var(--panel); border-color: var(--accent); }
+
+/* Подсветка найденного сообщения */
+.msg.search-hit { outline: 2px solid var(--accent); outline-offset: 1px; border-radius: 12px; }
+.msg mark.cs-mark { background: rgba(79,140,255,.45); color: inherit; border-radius: 3px; padding: 0 1px; }
+
+/* 🎁 Подарки */
+.gift-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 10px 0; max-height: 42vh; overflow-y: auto; }
+.gift-card { background: var(--panel2); border: 1px solid var(--line); border-radius: 14px; padding: 12px 6px 10px; text-align: center; cursor: pointer; transition: border-color .15s, transform .12s; }
+.gift-card:hover { transform: translateY(-2px); border-color: #2e3b52; }
+.gift-card.sel { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.gift-card.sold { opacity: .45; cursor: default; }
+.gift-em { font-size: 34px; line-height: 1.2; }
+.gift-nm { font-size: 12px; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gift-pr { font-size: 12.5px; color: var(--accent); font-weight: 700; margin-top: 2px; }
+.gift-left { font-size: 10.5px; color: var(--muted); margin-top: 1px; }
+/* Пузырь-подарок в чате */
+.gift-bubble { text-align: center; padding: 6px 10px; min-width: 150px; }
+.gift-bubble .gb-em { font-size: 44px; line-height: 1.2; filter: drop-shadow(0 4px 12px rgba(232,161,58,.35)); }
+.gift-bubble .gb-t { font-size: 13.5px; font-weight: 700; margin-top: 2px; }
+.gift-bubble .gb-m { font-size: 13px; color: var(--muted); margin-top: 3px; }
+.gift-bubble.gift-open { cursor: pointer; border-radius: 12px; transition: background .15s; }
+.gift-bubble.gift-open:hover { background: rgba(255,255,255,.05); }
+.gift-bubble .gb-hint { font-size: 11px; color: var(--accent); margin-top: 5px; opacity: .9; }
+
+/* 🎁 Просмотр подарка + анимация призраков */
+.gift-info-card { max-width: 360px; text-align: center; }
+.gift-info-stage { position: relative; height: 180px; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 4px; }
+.gift-info-stage .gift-center { font-size: 72px; line-height: 1; filter: drop-shadow(0 6px 18px rgba(232,161,58,.45)); animation: giftPop .5s cubic-bezier(.2,1.4,.5,1) both; z-index: 2; }
+.gift-info-stage .ghost-fly { position: absolute; font-size: 24px; will-change: transform, opacity; }
+@keyframes giftPop { from { transform: scale(.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+/* Каждый призрак летит по своему эллипсу; траектория задана через translate по кадрам.
+   Медленно и ненавязчиво: прозрачность «дышит» от 10% до 40% видимости. */
+@keyframes ghostOrbit0 { 0%{transform:translate(78px,0) scale(1);opacity:.1} 25%{transform:translate(0,-48px) scale(1.1);opacity:.4} 50%{transform:translate(-78px,0) scale(1);opacity:.15} 75%{transform:translate(0,48px) scale(.9);opacity:.4} 100%{transform:translate(78px,0) scale(1);opacity:.1} }
+@keyframes ghostOrbit1 { 0%{transform:translate(-90px,10px) scale(.9);opacity:.15} 25%{transform:translate(0,56px) scale(1);opacity:.4} 50%{transform:translate(90px,-10px) scale(1.1);opacity:.1} 75%{transform:translate(0,-56px) scale(1);opacity:.4} 100%{transform:translate(-90px,10px) scale(.9);opacity:.15} }
+@keyframes ghostOrbit2 { 0%{transform:translate(0,-60px) scale(1);opacity:.2} 25%{transform:translate(64px,0) scale(.85);opacity:.4} 50%{transform:translate(0,60px) scale(1);opacity:.1} 75%{transform:translate(-64px,0) scale(1.1);opacity:.4} 100%{transform:translate(0,-60px) scale(1);opacity:.2} }
+.gift-info-stage .gf0 { animation: ghostOrbit0 7.5s linear infinite; font-size: 15px; }
+.gift-info-stage .gf1 { animation: ghostOrbit1 9s linear infinite; font-size: 18px; }
+.gift-info-stage .gf2 { animation: ghostOrbit2 8s linear infinite; font-size: 14px; }
+.gift-info-stage .gf3 { animation: ghostOrbit0 9.5s linear infinite reverse; font-size: 17px; }
+.gift-info-stage .gf4 { animation: ghostOrbit1 7s linear infinite reverse; font-size: 13px; }
+.gift-info-stage .gf5 { animation: ghostOrbit2 10s linear infinite reverse; font-size: 16px; }
+.gift-info-stage .gf6 { animation: ghostOrbit0 8.5s linear infinite; font-size: 19px; }
+.gift-info-name { font-size: 20px; font-weight: 800; margin-bottom: 12px; }
+.gift-info-rows { text-align: left; }
+.gift-info-rows .gi-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 2px; border-top: 1px solid var(--line); }
+.gift-info-rows .gi-lbl { color: var(--muted); font-size: 14px; }
+.gift-info-rows .gi-val { font-size: 14px; font-weight: 700; text-align: right; }
+.gift-info-rows .gi-msg { background: var(--panel2); border-radius: 12px; padding: 10px 12px; margin: 10px 0; font-style: italic; text-align: center; }
+/* Витрина на профиле */
+.gift-shelf { margin-top: 10px; }
+.gift-shelf-t { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+.gift-shelf-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.gift-shelf-item { background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 6px 9px; font-size: 22px; }
+/* Мои подарки: строка */
+.mg-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel2); }
+.mg-em { font-size: 26px; }
+.mg-meta { flex: 1; min-width: 0; font-size: 13px; }
+.mg-sub { color: var(--muted); font-size: 11.5px; margin-top: 2px; }
+.mg-row button { padding: 6px 10px; font-size: 12px; }
+
+/* 🔒 Конфиденциальность (в стиле Telegram) */
+.set-cap { font-size: 12px; letter-spacing: .06em; color: var(--muted); text-transform: uppercase; margin: 18px 2px 8px; }
+.set-row.priv-mode .lang-check { color: var(--accent); opacity: 0; font-weight: 700; }
+.set-row.priv-mode.on .lang-check { opacity: 1; }
+.priv-add { display: flex; gap: 8px; padding: 10px 12px; }
+.priv-add input { flex: 1; background: var(--bg); border: 1px solid var(--line); border-radius: 9px; padding: 8px 11px; color: var(--text); font-size: 14px; }
+.priv-add button { border-radius: 9px; padding: 8px 14px; }
+.priv-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-top: 1px solid var(--line); }
+.priv-nm { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.priv-nm b { font-size: 14.5px; }
+.priv-nm span { font-size: 12.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; }
+.ghost-btn.sm { padding: 6px 12px; font-size: 13px; border-radius: 9px; }
+
+/* 🔗 Превью ссылок (карточка внутри сообщения) */
+.lp-card { display: flex; gap: 10px; align-items: flex-start; margin-top: 6px; padding-left: 9px;
+  border-left: 3px solid var(--accent); border-radius: 4px; cursor: pointer; }
+.lp-card:hover .lp-title { text-decoration: underline; }
+.lp-body { flex: 1; min-width: 0; }
+.lp-site { color: var(--accent); font-size: 12.5px; font-weight: 700; margin-bottom: 1px; }
+.lp-title { font-size: 13.5px; font-weight: 700; line-height: 1.35; }
+.lp-desc { font-size: 12.5px; color: var(--muted); line-height: 1.35; margin-top: 2px;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.lp-img { width: 54px; height: 54px; border-radius: 8px; object-fit: cover; flex: 0 0 auto; }

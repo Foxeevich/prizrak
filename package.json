@@ -1,0 +1,42 @@
+{
+  "name": "prizrak",
+  "version": "1.10.0",
+  "private": true,
+  "type": "module",
+  "description": "Prizrak — децентрализованный E2E-мессенджер с федерацией и stealth-транспортом для обхода DPI",
+  "workspaces": [
+    "packages/crypto",
+    "packages/server",
+    "packages/client",
+    "packages/transport",
+    "packages/relay"
+  ],
+  "scripts": {
+    "test": "node demo/crypto-test.js && node demo/groups-test.js && node demo/admin-test.js && node demo/features-1.2-test.js && node demo/features-1.3-test.js && node demo/features-1.4-test.js && node demo/features-1.6-test.js && node demo/features-1.7-test.js && node demo/features-1.8-test.js && node demo/features-1.9-test.js && node demo/features-relogin-test.js && node demo/features-relogin-sessions-test.js && node demo/features-rekey-heal-test.js && node demo/features-lostsession-test.js && node demo/features-bigfile-test.js && node demo/features-relay-test.js && node demo/features-receipts-test.js && node demo/features-delete-both-test.js && node demo/features-invite-test.js && node demo/features-media-delete-test.js && node demo/features-federation-queue-test.js && node demo/features-presence-test.js && node demo/features-media-push-test.js && node demo/features-media-gate-test.js && node demo/features-media-progress-test.js && node demo/features-download-progress-test.js && node demo/features-devices-test.js && node demo/features-multidevice-test.js && node demo/features-selfsync-test.js && node demo/features-readsync-test.js && node demo/features-devcache-test.js && node demo/features-devlimit-test.js && node demo/features-reactions-test.js && node demo/features-dm-reactions-test.js && node demo/features-update-manifest-test.js && node demo/features-account-backup-test.js && node demo/features-seed-recovery-test.js && node demo/features-portscan-test.js && node demo/features-tls-test.js && node demo/features-channel-rekey-test.js && node demo/features-xserver-channel-test.js && node demo/features-channel-serverkey-test.js && node demo/demo.js && node demo/desktop-lib-check.js && node demo/features-chats-restore-test.js && node demo/features-room-sync-test.js && node demo/features-mobile-call-transport-test.js && node demo/features-profile-alias-test.js && node packages/mobile/mobile-core-test.mjs",
+    "demo": "node demo/demo.js",
+    "demo:groups": "node demo/groups-test.js",
+    "demo:features": "node demo/features-1.2-test.js",
+    "demo:transport": "node packages/transport/src/demo.js",
+    "server": "node packages/server/src/server.js",
+    "relay": "node packages/relay/src/relay.js",
+    "deploy": "bash deploy/prizrak-deploy.sh",
+    "desktop": "npm --prefix packages/desktop start",
+    "release": "bash scripts/release.sh",
+    "demo:admin": "node demo/admin-test.js",
+    "demo:features13": "node demo/features-1.3-test.js",
+    "demo:features14": "node demo/features-1.4-test.js",
+    "demo:features16": "node demo/features-1.6-test.js",
+    "demo:features17": "node demo/features-1.7-test.js",
+    "demo:features18": "node demo/features-1.8-test.js",
+    "demo:features19": "node demo/features-1.9-test.js",
+    "demo:web": "bash demo/web-test.sh",
+    "demo:bank": "bash demo/bank-client-test.sh"
+  },
+  "dependencies": {
+    "@noble/ciphers": "^1.2.1",
+    "@noble/curves": "^1.8.1",
+    "@noble/hashes": "^1.7.1",
+    "openpgp": "^6.1.0",
+    "ws": "^8.18.0"
+  }
+}

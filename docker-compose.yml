@@ -1,0 +1,39 @@
+# docker-compose.yml
+# «Лёгкое разворачивание» в духе Matrix: поднимаем ДВА независимых homeserver'а
+# (a.org и b.org), которые федерируются друг с другом. В реальности каждый такой
+# сервис живёт у своего владельца на своём домене за reverse-proxy с TLS.
+#
+#   docker compose up --build
+#   # затем прогнать демо-клиента против федерации (см. README).
+services:
+  homeserver-a:
+    build: .
+    environment:
+      PRIZRAK_DOMAIN: a.org
+      PRIZRAK_PORT: "8801"
+      PRIZRAK_STORE: /data/store.json
+      # Локальный реестр «домен→URL» вместо DNS для демо-сети:
+      PRIZRAK_RESOLVER: '{"a.org":"http://homeserver-a:8801","b.org":"http://homeserver-b:8802"}'
+    ports: ["8801:8801"]
+    volumes: ["data-a:/data"]
+
+  homeserver-b:
+    build: .
+    environment:
+      PRIZRAK_DOMAIN: b.org
+      PRIZRAK_PORT: "8802"
+      PRIZRAK_STORE: /data/store.json
+      PRIZRAK_RESOLVER: '{"a.org":"http://homeserver-a:8801","b.org":"http://homeserver-b:8802"}'
+    command: ["node", "packages/server/src/server.js"]
+    ports: ["8802:8802"]
+    volumes: ["data-b:/data"]
+
+  # В ПРОДЕ перед каждым homeserver'ом ставится reverse-proxy, который:
+  #   • терминирует TLS на реальном домене (Let's Encrypt),
+  #   • отдаёт /.well-known/prizrak/server для discovery,
+  #   • МОЖЕТ работать в Reality-режиме stealth-транспорта для звонков.
+  # Пример (Caddy) закомментирован — см. docs/ARCHITECTURE.md.
+
+volumes:
+  data-a:
+  data-b:

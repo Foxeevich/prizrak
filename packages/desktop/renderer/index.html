@@ -1,0 +1,640 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; style-src 'self' 'unsafe-inline'; media-src 'self' blob:; img-src 'self' data: blob:;" />
+  <title>Prizrak</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Экран входа -->
+  <div id="auth" class="auth">
+    <div class="auth-card">
+      <div class="brand"><span class="ghost">👻</span> Prizrak</div>
+      <div class="subtitle" data-i18n="auth.subtitle">Децентрализованный мессенджер · без телефона</div>
+      <label data-i18n="auth.homeserver">Домашний сервер</label>
+      <select id="serverSel">
+        <option value="prizrak.im">Prizrak.im (WorldWide)</option>
+        <option value="prizrak.targethack.org">prizrak.targethack.org (Russia)</option>
+        <option value="prizrak.phoenix.lol">prizrak.phoenix.lol</option>
+        <option value="custom" data-i18n="auth.customServer">Свой сервер</option>
+      </select>
+      <input id="customServer" class="hidden" type="text" data-i18n-ph="auth.customPh" placeholder="http://мой.сервер:8801" />
+      <div id="serverInfo" class="hint"></div>
+      <label data-i18n="auth.username">Имя пользователя</label>
+      <div class="uid-row"><input id="login" type="text" data-i18n-ph="auth.loginPh" placeholder="alice" /><span id="uidDomain" class="uid-domain"></span></div>
+      <div class="hint" id="uidPreview"></div>
+      <label data-i18n="auth.password">Пароль</label>
+      <input id="password" type="password" data-i18n-ph="auth.passwordPh" placeholder="минимум 8 символов" />
+      <label data-i18n="auth.password2">Подтверждение пароля</label>
+      <input id="password2" type="password" data-i18n-ph="auth.password2Ph" placeholder="повторите пароль" />
+      <div id="inviteRow" class="hidden"><label data-i18n="auth.invite">Инвайт-код</label><input id="inviteCode" type="text" /></div>
+      <div class="row">
+        <button id="btnRegister" class="primary" data-i18n="auth.register">Зарегистрироваться</button>
+        <button id="btnLogin" class="ghost-btn" data-i18n="auth.login">Войти</button>
+      </div>
+      <div id="authError" class="error"></div>
+      <div class="auth-restore"><a href="#" id="authRestore" data-i18n="auth.restore">Восстановить аккаунт из файла копии</a></div>
+      <div class="auth-restore"><a href="#" id="authRestoreSeed" data-i18n="auth.restoreSeed">Восстановить по фразе восстановления</a></div>
+    </div>
+  </div>
+
+  <!-- Основной экран -->
+  <div id="app" class="app hidden">
+      <aside class="sidebar">
+        <div class="me">
+          <div class="me-row">
+            <div id="meAva" class="me-ava">👤</div>
+            <div class="me-info">
+              <div id="meName" class="me-name"></div>
+              <div id="meFp" class="me-fp"></div>
+            </div>
+          </div>
+          <div class="wallet" id="walletChip" data-i18n-title="wallet.tip" title="Мои призраки — баланс, покупка, подарки">
+            <span id="ghostBalance">👻 0</span><span class="wallet-hint" data-i18n="wallet.mine">Мои призраки ›</span>
+          </div>
+        </div>
+
+        <!-- Панель: Чаты -->
+        <div id="chatsPanel" class="panel">
+          <div class="actions">
+            <button id="newChat" data-i18n="side.newChat">＋ Чат</button>
+            <button id="newGroup" data-i18n="side.newGroup">＋ Группа</button>
+            <button id="newChannel" data-i18n="side.newChannel">＋ Канал</button>
+            <button id="findGroups" data-i18n="side.findGroups" data-i18n-title="gsrch.title" title="Поиск публичных групп">🔍</button>
+          </div>
+          <input id="chatSearch" class="chat-search" type="text" data-i18n-ph="side.searchChats" placeholder="🔍 Поиск чатов…" />
+          <div id="convList" class="conv-list"></div>
+        </div>
+
+        <!-- Панель: Контакты -->
+        <div id="contactsPanel" class="panel hidden">
+          <div class="actions"><button id="addContact" data-i18n="side.addContact">＋ Добавить контакт</button></div>
+          <input id="contactSearch" class="chat-search" type="text" data-i18n-ph="side.searchContacts" placeholder="🔍 Поиск контактов…" />
+          <div id="contactsList" class="conv-list"></div>
+        </div>
+
+        <!-- Панель: Звонки -->
+        <div id="callsPanel" class="panel hidden">
+          <div id="callsList" class="conv-list"></div>
+        </div>
+
+        <!-- Нижнее меню (как в Telegram) — внизу бокового меню -->
+        <nav id="bottomNav" class="bottom-nav">
+          <button class="nav-btn" data-tab="contacts"><span class="ic">👤</span><span class="nl" data-i18n="nav.contacts">Контакты</span></button>
+          <button class="nav-btn" data-tab="calls"><span class="ic">📞</span><span class="nl" data-i18n="nav.calls">Звонки</span></button>
+          <button class="nav-btn active" data-tab="chats"><span class="ic">💬</span><span class="nl" data-i18n="nav.chats">Чаты</span></button>
+          <button class="nav-btn" data-tab="settings"><span class="ic">⚙️</span><span class="nl" data-i18n="nav.settings">Настройки</span></button>
+        </nav>
+        <!-- Зелёная плашка обновления заменяет нижнюю панель, когда обновление готово -->
+        <button id="updateBar" class="update-bar hidden" title=""><span class="upd-ic">⟳</span><span id="updateBarLbl" data-i18n="upd.button">Обновить Prizrak</span></button>
+      </aside>
+
+      <main class="chat">
+        <header id="chatHeader" class="chat-header">
+          <div id="chatHead" class="chat-head">
+            <div id="chatAva" class="chat-ava"></div>
+            <div class="chat-headmeta">
+              <div id="chatTitle" class="chat-title" data-i18n="chat.pick">Выберите чат</div>
+              <div id="chatStatus" class="chat-status"></div>
+            </div>
+          </div>
+          <div class="chat-actions">
+            <button id="btnSearch" class="icon hidden" data-i18n-title="chat.search" title="Поиск по чату">🔍</button>
+            <button id="btnCall" class="icon hidden" data-i18n-title="chat.audioCall" title="Аудиозвонок">📞</button>
+            <button id="btnVideo" class="icon hidden" data-i18n-title="chat.videoCall" title="Видеозвонок">🎥</button>
+            <button id="btnGift" class="icon hidden" data-i18n-title="chat.gift" title="Подарить 👻">👻</button>
+            <button id="btnGiftShop" class="icon hidden" data-i18n-title="gift.shop" title="Отправить подарок">🎁</button>
+            <button id="btnRetention" class="icon hidden" data-i18n-title="chat.retention" title="Срок хранения истории">⏳</button>
+            <button id="btnShare" class="icon hidden" data-i18n-title="chat.share" title="Поделиться">📤</button>
+            <button id="btnRoomEdit" class="icon hidden" data-i18n-title="chat.roomSettings" title="Настройки комнаты">✎</button>
+            <button id="btnViewProfile" class="icon hidden" data-i18n-title="chat.peerProfile" title="Профиль собеседника">👤</button>
+            <button id="btnMembers" class="icon hidden" data-i18n-title="chat.members" title="Участники и роли">👥</button>
+            <button id="btnDelSel" class="danger hidden" data-i18n-title="chat.delSel" title="Удалить выбранные">🗑</button>
+            <button id="btnInvite" class="hidden" data-i18n="chat.invite">Пригласить</button>
+          </div>
+        </header>
+        <!-- Поиск по истории чата (как в Telegram) -->
+        <div id="chatSearchBar" class="chat-search-bar hidden">
+          <span class="cs-ic">🔍</span>
+          <input id="csInput" type="text" data-i18n-ph="chat.searchPh" placeholder="Поиск по чату…" autocomplete="off" />
+          <span id="csCount" class="cs-count"></span>
+          <button id="csPrev" class="icon" title="Раньше">︿</button>
+          <button id="csNext" class="icon" title="Позже">﹀</button>
+          <button id="csClose" class="icon" title="Закрыть">✕</button>
+        </div>
+        <div id="messages" class="messages"></div>
+        <!-- Кнопка «в самый низ» при прокрутке вверх -->
+        <button id="scrollDown" class="scroll-down hidden" title="Вниз">⌄</button>
+        <div id="emojiPanel" class="emoji-panel hidden"></div>
+        <footer class="composer">
+          <button id="btnAttach" class="icon" data-i18n-title="composer.attach" title="Прикрепить файл">📎</button>
+          <button id="btnEmoji" class="icon" data-i18n-title="composer.emoji" title="Эмодзи">😊</button>
+          <button id="btnVoice" class="icon" data-i18n-title="composer.voice" title="Записать голосовое">🎤</button>
+          <textarea id="msgInput" rows="1" data-i18n-ph="composer.message" placeholder="Сообщение…" disabled></textarea>
+          <button id="btnSend" data-i18n="composer.send" disabled>Отправить</button>
+          <input id="fileInput" type="file" class="hidden" />
+        </footer>
+        <div id="composerLock" class="composer-lock hidden" data-i18n="composer.lock">🔒 В этом канале пишут только администраторы</div>
+        <!-- Панель режима выделения (как в Telegram): корзина слева, пересылка справа -->
+        <div id="selBar" class="sel-bar hidden">
+          <button id="selDelete" class="sel-ic" data-i18n-title="sel.delete" title="Удалить">🗑</button>
+          <div id="selCount" class="sel-count">Выбрано 0</div>
+          <button id="selForward" class="sel-ic" data-i18n-title="sel.forward" title="Переслать">➡️</button>
+        </div>
+      </main>
+  </div>
+
+  <!-- Экран настроек (две колонки, как в Telegram Desktop) -->
+  <div id="settingsScreen" class="settings-screen two-pane hidden">
+    <div class="set-master">
+      <div class="settings-head">
+        <div id="setAva" class="settings-ava">👤</div>
+        <div class="settings-who">
+          <div id="setName" class="settings-name"></div>
+          <div id="setId" class="settings-id"></div>
+        </div>
+        <button id="setBack" class="ghost-btn" data-i18n="common.close">Закрыть</button>
+      </div>
+      <div class="set-nav">
+        <button class="set-nav-row" id="btnMyProfile"><span class="ic tile" style="background:#3390ec">👤</span><span class="lbl" data-i18n="set.myProfile">Мой профиль</span><span class="chev">›</span></button>
+        <button class="set-nav-row" id="rowGhosts"><span class="ic tile" style="background:#8e7cff">👻</span><span class="lbl" data-i18n="set.myGhosts">Мои призраки</span><span class="val" id="rowGhostsVal">👻 0</span><span class="chev">›</span></button>
+        <button class="set-nav-row" id="rowSendGift"><span class="ic tile" style="background:#e0555a">🎁</span><span class="lbl" data-i18n="gift.shop">Отправить подарок</span><span class="chev">›</span></button>
+        <button class="set-nav-row" data-sec="appearance"><span class="ic tile" style="background:#f0733d">🎨</span><span class="lbl" data-i18n="set.appearance">Оформление</span><span class="chev">›</span></button>
+        <button class="set-nav-row" data-sec="language"><span class="ic tile" style="background:#3aa3ff">🌐</span><span class="lbl" data-i18n="set.language">Язык</span><span class="val" id="rowLangVal">Русский</span><span class="chev">›</span></button>
+        <button class="set-nav-row" data-sec="privacy"><span class="ic tile" style="background:#e0555a">🔒</span><span class="lbl" data-i18n="set.privacy">Конфиденциальность</span><span class="chev">›</span></button>
+        <button class="set-nav-row" data-sec="vpn"><span class="ic tile" style="background:#6b57e0">🛡</span><span class="lbl" data-i18n="set.vpn">Призрак-VPN</span><span class="chev">›</span></button>
+        <button class="set-nav-row" data-sec="notif"><span class="ic tile" style="background:#e0533d">🔔</span><span class="lbl" data-i18n="set.notifSound">Уведомления и звук</span><span class="chev">›</span></button>
+        <button class="set-nav-row" data-sec="system"><span class="ic tile" style="background:#54b361">⚙️</span><span class="lbl" data-i18n="set.system">Система</span><span class="chev">›</span></button>
+      </div>
+    </div>
+    <div class="set-detail">
+      <div class="set-sec" data-sec="appearance">
+        <div class="set-sec-t" data-i18n="set.appearance">Оформление</div>
+        <div class="set-card">
+          <div class="set-row static"><span class="ic tile" style="background:#f0733d">🎨</span><span class="lbl" data-i18n="set.theme">Тема</span>
+            <div class="seg mini">
+              <button class="seg-btn" data-theme="auto" data-i18n="set.themeAuto">Авто</button>
+              <button class="seg-btn" data-theme="dark" data-i18n="set.themeDark">Тёмная</button>
+              <button class="seg-btn" data-theme="light" data-i18n="set.themeLight">Светлая</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="set-sec hidden" data-sec="language">
+        <div class="set-sec-t" data-i18n="set.language">Язык</div>
+        <div class="set-card">
+          <button class="set-row lang-pick" data-lang="en"><span class="lbl">English</span><span class="lang-check">✓</span></button>
+          <button class="set-row lang-pick" data-lang="ru"><span class="lbl">Русский</span><span class="lang-check">✓</span></button>
+        </div>
+        <div class="hint" data-i18n="set.langNote">Меняется язык интерфейса. Тексты сообщений не переводятся.</div>
+      </div>
+      <!-- 🔒 Конфиденциальность: список пунктов (как в Telegram) -->
+      <div class="set-sec hidden" data-sec="privacy">
+        <div class="set-sec-t" data-i18n="set.privacy">Конфиденциальность</div>
+        <div class="set-card">
+          <button class="set-row" data-priv="blocked"><span class="ic tile" style="background:#e0555a">🚫</span><span class="lbl" data-i18n="priv.blocked">Чёрный список</span><span class="val" id="privBlockedVal"></span><span class="chev">›</span></button>
+          <button class="set-row" data-priv="groups"><span class="ic tile" style="background:#3390ec">👥</span><span class="lbl" data-i18n="priv.groups">Группы и каналы</span><span class="val" id="privGroupsVal"></span><span class="chev">›</span></button>
+          <button class="set-row" data-priv="calls"><span class="ic tile" style="background:#42b96b">📞</span><span class="lbl" data-i18n="priv.calls">Звонки</span><span class="val" id="privCallsVal"></span><span class="chev">›</span></button>
+        </div>
+        <div class="hint" data-i18n="priv.hint">Заблокированные не могут писать вам, звонить и добавлять вас в группы. Они не узнают, что заблокированы.</div>
+      </div>
+      <!-- 🔒 Подэкран одной политики / чёрного списка -->
+      <div class="set-sec hidden" data-sec="privacyDetail">
+        <div class="set-sec-t" id="privDetailTitle"></div>
+        <div id="privModeBox">
+          <div class="set-cap" id="privModeCap"></div>
+          <div class="set-card">
+            <button class="set-row priv-mode" data-mode="all"><span class="lbl" data-i18n="priv.all">Все</span><span class="lang-check">✓</span></button>
+            <button class="set-row priv-mode" data-mode="contacts"><span class="lbl" data-i18n="priv.contacts">Мои контакты</span><span class="lang-check">✓</span></button>
+            <button class="set-row priv-mode" data-mode="none"><span class="lbl" data-i18n="priv.nobody">Никто</span><span class="lang-check">✓</span></button>
+          </div>
+          <div class="hint" id="privModeHint"></div>
+        </div>
+        <div class="set-cap" id="privListCap"></div>
+        <div class="set-card">
+          <div class="priv-add"><input id="privAddInput" type="text" placeholder="ник:домен" autocomplete="off"/><button id="privAddBtn" class="primary" data-i18n="priv.add">Добавить</button></div>
+          <div id="privList"></div>
+        </div>
+        <div class="hint" id="privListHint"></div>
+      </div>
+      <!-- 🛡 Призрак-VPN: два переключателя + выбор страны с рейтингом -->
+      <div class="set-sec hidden" data-sec="vpn">
+        <div class="set-sec-t" data-i18n="set.vpn">Призрак-VPN</div>
+        <div id="vpnUnavail" class="hint hidden" data-i18n="vpn.unavail">Маскировка появится в сборке с нативным туннелем. Ниже — интерфейс и выбор страны.</div>
+        <div class="set-cap" data-i18n="vpn.sub">Подписка</div>
+        <div class="set-card">
+          <div class="set-row static"><span class="ic tile" id="vpnSubIco" style="background:#e0555a">🛡</span><span class="lbl"><b id="vpnSubText">Не оплачено</b><br><span class="hint-sm" id="vpnSubHint" data-i18n="vpn.payHint">Оплатите призраками, чтобы пользоваться VPN</span></span></div>
+          <button id="vpnPay" class="primary" style="width:100%;margin-top:6px" data-i18n="vpn.pay">Оплатить VPN</button>
+        </div>
+        <div class="set-card">
+          <label class="set-row static"><span class="ic tile" style="background:#6b57e0">🛡</span><span class="lbl"><b data-i18n="vpn.mask">Замаскироваться</b><br><span class="hint-sm" data-i18n="vpn.maskHint">Весь трафик компьютера через Призрак. Сообщения и звонки Призрака — напрямую.</span></span><input id="vpnMask" type="checkbox" class="switch"></label>
+          <label class="set-row static"><span class="ic tile" style="background:#8e7cff">👻</span><span class="lbl"><b data-i18n="vpn.node">Поднять призрак-узел</b><br><span class="hint-sm" data-i18n="vpn.nodeHint">Стать промежуточным узлом сети и зарабатывать 👻.</span></span><input id="vpnNode" type="checkbox" class="switch"></label>
+        </div>
+        <div class="set-cap" data-i18n="vpn.country">Страна выхода</div>
+        <div class="set-card" id="vpnCountries"><div class="hint" data-i18n="vpn.loading">Загружаю страны…</div></div>
+        <div class="hint" data-i18n="vpn.switchHint">Смена страны на лету: сначала поднимается новый выход, потом рвётся старый — уже открытые соединения при смене IP оборвутся.</div>
+      </div>
+      <div class="set-sec hidden" data-sec="notif">
+        <div class="set-sec-t" data-i18n="set.notifSound">Уведомления и звук</div>
+        <div class="set-card">
+          <label class="set-row static"><span class="ic tile" style="background:#e0533d">🔔</span><span class="lbl" data-i18n="set.showNotif">Показывать уведомления</span><input id="setNotif" type="checkbox" class="switch" checked></label>
+          <label class="set-row static"><span class="ic tile" style="background:#8e7cff">🔊</span><span class="lbl" data-i18n="set.msgSound">Звук входящего сообщения</span><input id="setSound" type="checkbox" class="switch" checked></label>
+          <label class="set-row static"><span class="ic tile" style="background:#3aa3ff">🔗</span><span class="lbl" data-i18n="set.linkPreviews">Превью ссылок</span><input id="setLinkPrev" type="checkbox" class="switch" checked></label>
+        </div>
+      </div>
+      <div class="set-sec hidden" data-sec="system">
+        <div class="set-sec-t" data-i18n="set.system">Система</div>
+        <div class="set-card">
+          <label class="set-row static"><span class="ic tile" style="background:#54b361">🖥️</span><span class="lbl" data-i18n="set.autostart">Запускать при входе в систему</span><input id="setAutostart" type="checkbox" class="switch"></label>
+          <label class="set-row static"><span class="ic tile" style="background:#3aa3ff">🗔</span><span class="lbl" data-i18n="set.closeTray">Сворачивать в трей при закрытии</span><input id="setCloseTray" type="checkbox" class="switch"></label>
+          <button class="set-row" id="setCheckUpd"><span class="ic tile" style="background:#3390ec">🔄</span><span class="lbl" data-i18n="set.checkUpd">Проверить обновления</span><span class="val" id="setUpdInfo"></span><span class="chev">›</span></button>
+          <button class="set-row hidden" id="btnAdmin"><span class="ic tile" style="background:#8b93a7">⚙️</span><span class="lbl" data-i18n="set.serverAdmin">Настройки сервера (админ)</span><span class="chev">›</span></button>
+        </div>
+        <div class="set-sec-t" data-i18n="set.recovery">Резервная копия и восстановление</div>
+        <div class="set-card">
+          <button class="set-row" id="setBackup"><span class="ic tile" style="background:#8e7cff">🔑</span><span class="lbl" data-i18n="set.backup">Сделать копию аккаунта</span><span class="chev">›</span></button>
+          <button class="set-row" id="setSeed"><span class="ic tile" style="background:#54b361">📝</span><span class="lbl" data-i18n="set.seed">Фраза восстановления</span><span class="chev">›</span></button>
+          <button class="set-row" id="setDevices"><span class="ic tile" style="background:#3390ec">💻</span><span class="lbl" data-i18n="set.devices">Устройства</span><span class="chev">›</span></button>
+          <button class="set-row" id="setMyGifts"><span class="ic tile" style="background:#e8a13a">🎁</span><span class="lbl" data-i18n="gift.mine">Мои подарки</span><span class="chev">›</span></button>
+        </div>
+        <div class="hint" data-i18n="set.backupHint" style="margin:2px 4px 8px">Файл-копия = доступ к аккаунту. Храните в надёжном месте, не делитесь.</div>
+        <div class="set-card">
+          <button class="set-row danger-row" id="btnLogout"><span class="ic tile" style="background:#e0533d">⎋</span><span class="lbl" data-i18n="set.logout">Выйти из аккаунта</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Экран «Баланс Призраков» (как «Баланс звёзд») -->
+  <div id="ghostsScreen" class="settings-screen hidden">
+    <div class="settings-card">
+      <div class="settings-head">
+        <button id="ghBack" class="ghost-btn" data-i18n="common.back">‹ Назад</button>
+        <div class="settings-name" style="flex:1;text-align:center" data-i18n="ghosts.balanceTitle">Баланс Призраков</div>
+        <div style="width:74px"></div>
+      </div>
+      <div class="gs-hero">
+        <div class="gs-bal" id="gsBalance">👻 0</div>
+        <div class="gs-cap" data-i18n="ghosts.yourBalance">Ваш баланс призраков</div>
+        <div class="row" style="justify-content:center;max-width:320px;margin:14px auto 0">
+          <button id="gsBuy" class="primary" data-i18n="ghosts.buy">Купить</button>
+          <button id="gsGift" class="ghost-btn" data-i18n="ghosts.gift">🎁 Подарить</button>
+        </div>
+      </div>
+
+      <div class="set-group-title" data-i18n="ghosts.available">Доступный баланс</div>
+      <div class="gs-avail">
+        <div class="gs-availnum">👻 <span id="gsAvail">0</span></div>
+        <button id="gsWithdraw" class="primary wide" data-i18n="ghosts.withdraw" disabled>Вывести через PayMoney (скоро)</button>
+        <div class="hint" data-i18n="ghosts.withdrawNote">Вывод средств через PayMoney.online появится позже.</div>
+      </div>
+
+      <div class="set-group-title">Мои узлы-тайники 👻</div>
+      <div class="gs-avail">
+        <div class="hint">Держите узел-тайник — получайте призраков за аптайм и доставки. Откройте статус узла (http://127.0.0.1:8820/status), введите там свой ник, получите код привязки и вставьте сюда.</div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <input id="nodeBindCode" class="input" style="flex:1" placeholder="код привязки с /status узла" autocomplete="off">
+          <button id="nodeBindBtn" class="primary">Привязать</button>
+        </div>
+        <div id="myNodes" style="margin-top:10px"></div>
+      </div>
+
+      <div class="set-group-title" data-i18n="ghosts.history">История операций</div>
+      <div id="ghostsOps" class="gs-ops"><div class="hint" style="padding:12px" data-i18n="common.loading">Загрузка…</div></div>
+    </div>
+  </div>
+
+  <!-- Деталь операции -->
+  <div id="opModal" class="modal hidden">
+    <div class="modal-card op-card">
+      <button id="opClose" class="modal-x" data-i18n-title="common.close" title="Закрыть">✕</button>
+      <div class="op-hero" id="opHero">👻</div>
+      <div class="op-amount" id="opAmount"></div>
+      <div class="op-desc" id="opDesc"></div>
+      <div class="op-table">
+        <div class="op-row"><span class="op-k" id="opWhoK" data-i18n="op.fromTo">От / Кому</span><span class="op-v" id="opWho">—</span></div>
+        <div class="op-row"><span class="op-k" data-i18n="op.id">ID операции</span><span class="op-v mono" id="opId">—</span></div>
+        <div class="op-row"><span class="op-k" data-i18n="op.date">Дата</span><span class="op-v" id="opDate">—</span></div>
+      </div>
+      <button id="opDone" class="primary wide" data-i18n="common.done">Готово</button>
+    </div>
+  </div>
+
+  <!-- Мои призраки (как «Мои звёзды») -->
+  <div id="ghostsModal" class="modal hidden">
+    <div class="modal-card ghosts-card">
+      <button id="ghClose" class="modal-x" data-i18n-title="common.close" title="Закрыть">✕</button>
+      <div class="ghosts-hero">👻</div>
+      <div class="ghosts-title" data-i18n="ghosts.brand">Призраки Prizrak</div>
+      <div class="ghosts-sub" data-i18n="ghosts.brandSub">Призраки нужны для премиума, подарков и покупок внутри Prizrak.</div>
+      <div class="ghosts-balance">
+        <div class="gb-num" id="ghBalance">👻 0</div>
+        <div class="gb-cap" data-i18n="ghosts.yourBalanceShort">Ваш баланс</div>
+      </div>
+      <button id="ghBuy" class="primary wide" data-i18n="ghosts.buyGhosts">Купить призраков</button>
+      <button id="ghGift" class="ghost-btn wide" data-i18n="ghosts.giftFriend">🎁 Подарить призраков другу</button>
+      <div class="hint ghosts-note" data-i18n-html="ghosts.note">Покупка проходит на защищённом сайте <b>prizrak.paymoney.online</b>. Баланс — единый, ваши призраки нельзя подделать.</div>
+    </div>
+  </div>
+
+  <!-- Панель активного звонка -->
+  <div id="callPanel" class="call-panel hidden">
+    <div class="call-inner">
+      <div id="callTitle" class="call-title" data-i18n="call.title">Звонок</div>
+      <canvas id="remoteCanvas" class="hidden"></canvas>
+      <video id="remoteVideo" autoplay playsinline class="hidden"></video>
+      <audio id="remoteAudio" autoplay class="hidden"></audio>
+      <div id="callStatus" class="call-status" data-i18n="call.connecting">Соединение…</div>
+      <div class="call-buttons">
+        <button id="btnMute" class="ghost-btn" data-i18n="call.muteMic">🎙 Выкл. микрофон</button>
+        <button id="btnHangup" class="danger" data-i18n="call.hangup">✖ Завершить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Входящий звонок -->
+  <div id="incomingCall" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-title" data-i18n="call.incoming">📞 Входящий звонок</div>
+      <div id="incomingFrom" class="hint"></div>
+      <div class="row">
+        <button id="btnAccept" class="primary" data-i18n="call.accept">Принять</button>
+        <button id="btnDecline" class="danger" data-i18n="call.decline">Отклонить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Редактирование своего профиля -->
+  <div id="profileModal" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-title" data-i18n="profile.title">Мой профиль</div>
+      <div class="avatar-edit"><img id="pfAvatarPrev" class="avatar-lg" alt="" /><button id="pfAvatarBtn" class="ghost-btn" data-i18n="profile.avatar">Аватар…</button><input id="pfAvatarFile" type="file" accept="image/*" class="hidden" /></div>
+      <label data-i18n="profile.name">Имя</label><input id="pfName" type="text" data-i18n-ph="profile.namePh" placeholder="Отображаемое имя" />
+      <label data-i18n="profile.bio">О себе</label><input id="pfBio" type="text" data-i18n-ph="profile.bioPh" placeholder="пару слов о себе" />
+      <label data-i18n="profile.birthday">День рождения</label><input id="pfBirthday" type="date" />
+      <label data-i18n="profile.phone">Телефон (опционально)</label><input id="pfPhone" type="text" placeholder="+…" />
+      <label class="chk"><input id="pfShowPhone" type="checkbox" /> <span data-i18n="profile.showPhone">Показывать телефон другим</span></label>
+      <label data-i18n="profile.channel">Личный канал (опционально)</label><input id="pfChannel" type="text" placeholder="@my_channel" />
+      <div class="row"><button id="pfShare" class="ghost-btn" data-i18n="profile.shareAccount">🔗 Поделиться аккаунтом</button></div>
+      <div class="row"><button id="pfSave" class="primary" data-i18n="common.save">Сохранить</button><button id="pfCancel" class="ghost-btn" data-i18n="common.cancel">Отмена</button></div>
+    </div>
+  </div>
+
+  <!-- Настройки комнаты/канала (полный экран, как в Telegram «Изм.») -->
+  <div id="roomEditScreen" class="settings-screen hidden">
+    <div class="settings-card">
+      <div class="settings-head">
+        <button id="reBack" class="ghost-btn" data-i18n="common.back">‹ Назад</button>
+        <div class="settings-name" style="flex:1;text-align:center" data-i18n="room.editTitle">Изменить</div>
+        <button id="reSave" class="ghost-btn accent" data-i18n="common.done">Готово</button>
+      </div>
+      <div class="re-hero">
+        <button id="reAvatarBtn" class="re-ava"><img id="reAvatarPrev" alt="" /><span class="re-cam">📷</span></button>
+        <input id="reAvatarFile" type="file" accept="image/*" class="hidden" />
+      </div>
+      <div class="re-fields">
+        <input id="reName" type="text" data-i18n-ph="room.name" placeholder="Название" />
+        <input id="reDesc" type="text" data-i18n-ph="room.descPh" placeholder="Описание" />
+      </div>
+      <div class="set-list">
+        <button class="set-row" id="reLinkRow"><span class="ic tile" style="background:#c86dd7">🔗</span><span class="lbl" data-i18n="room.inviteLinks">Пригласительные ссылки</span><span class="val" id="reLinkVal">1</span><span class="chev">›</span></button>
+        <button class="set-row" id="reReactRow"><span class="ic tile" style="background:#e0533d">👍</span><span class="lbl" data-i18n="room.reactions">Реакции</span><span class="val" id="reReactVal"></span><span class="chev">›</span></button>
+        <button class="set-row" id="reMembersRow"><span class="ic tile" style="background:#3aa3ff">👥</span><span class="lbl" id="reMembersLbl" data-i18n="info.members">Участники</span><span class="chev">›</span></button>
+        <button class="set-row" id="reDiagRow"><span class="ic tile" style="background:#54b361">🩺</span><span class="lbl" data-i18n="diag.title">Диагностика доставки</span><span class="chev">›</span></button>
+      </div>
+      <div class="set-list">
+        <button class="set-row danger-row" id="reDelete"><span class="ic tile" style="background:#e0533d">🗑</span><span class="lbl" id="reDeleteLbl" data-i18n="room.deleteChannel">Удалить канал</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Реакции (модальное окно, как в Telegram) -->
+  <div id="reactModal" class="modal hidden">
+    <div class="modal-card react-card">
+      <button id="reactClose" class="modal-x" data-i18n-title="common.close" title="Закрыть">✕</button>
+      <div class="modal-title center" data-i18n="room.reactions">Реакции</div>
+      <label class="react-toggle"><span class="tg-lbl" data-i18n="room.reactOn">Включить реакции</span><span class="tg-switch"><input id="reactOn" type="checkbox" /><i></i></span></label>
+      <div id="reactBody">
+        <div class="react-hint" data-i18n="react.pickHint">Вы можете добавить в список реакций эмодзи из любого набора.</div>
+        <div class="react-box">
+          <div id="reactEmojis" class="react-emojis"></div>
+          <button id="reactAdd" class="react-add"><span class="lbl" data-i18n="react.addReactions">Добавить реакции</span><span class="chev">›</span></button>
+        </div>
+        <div class="react-cap" data-i18n="react.maxTitle">КОЛИЧЕСТВО РЕАКЦИЙ НА ПУБЛИКАЦИЮ</div>
+        <div class="react-slider">
+          <div id="reactTicks" class="react-ticks"></div>
+          <input id="reactMax" type="range" min="1" max="11" step="1" value="11" />
+        </div>
+        <div class="react-hint" data-i18n="react.maxHint">Задайте максимальное количество разных реакций на публикацию, в том числе для ранее опубликованных сообщений.</div>
+        <label class="react-toggle"><span class="tg-lbl" data-i18n="react.paidOn">Включить платные реакции</span><span class="tg-switch"><input id="reactPaid" type="checkbox" /><i></i></span></label>
+        <div class="react-hint" data-i18n="react.paidHint">Включите, чтобы подписчики могли донатить призраков автору поста в качестве реакции.</div>
+      </div>
+      <button id="reactSave" class="primary wide" data-i18n="react.saveChanges">Сохранить изменения</button>
+    </div>
+  </div>
+
+  <!-- Диагностика доставки -->
+  <div id="diagModal" class="modal hidden">
+    <div class="modal-card react-card">
+      <button id="diagClose" class="modal-x" data-i18n-title="common.close" title="Закрыть">✕</button>
+      <div class="modal-title center" data-i18n="diag.title">Диагностика доставки</div>
+      <div class="hint" data-i18n="diag.hint">Проверяем, до кого сервер может доставить ключи/сообщения. Красное — участник не получит сообщения, пока не решится причина.</div>
+      <div id="diagList" class="diag-list"><div class="hint" style="padding:12px" data-i18n="common.loading">Загрузка…</div></div>
+      <div class="row"><button id="diagFix" class="primary" data-i18n="diag.fix">Раздать ключи заново</button><button id="diagClose2" class="ghost-btn" data-i18n="common.close">Закрыть</button></div>
+    </div>
+  </div>
+
+  <!-- Просмотр профиля собеседника -->
+  <div id="viewModal" class="modal hidden">
+    <div class="modal-card">
+      <div class="avatar-edit"><img id="vwAvatar" class="avatar-lg" alt="" /></div>
+      <div id="vwName" class="modal-title"></div>
+      <div id="vwId" class="hint"></div>
+      <div id="vwBio"></div><div id="vwBirthday" class="hint"></div>
+      <div id="vwPhone" class="hint"></div><div id="vwChannel" class="hint"></div>
+      <div id="vwGiftsBlock" class="gift-shelf hidden"><div class="gift-shelf-t" data-i18n="gift.shelf">🎁 Подарки</div><div id="vwGifts" class="gift-shelf-row"></div></div>
+      <div class="safety">
+        <div class="safety-head"><span data-i18n="safety.key">Ключ безопасности</span> <span id="vwStatus" class="vstatus"></span></div>
+        <div id="vwSafety" class="sn"></div>
+        <img id="vwQr" class="qr hidden" alt="QR" />
+        <div class="hint" data-i18n="safety.hint">Сверьте это число (или QR) с собеседником по другому каналу — чтобы убедиться, что вас никто не подслушивает.</div>
+      </div>
+      <div class="row"><button id="vwVerify" class="primary" data-i18n="safety.markVerified">Отметить проверенным</button><button id="vwShare" class="ghost-btn" data-i18n="safety.shareContact">Поделиться контактом</button></div>
+      <div class="row"><button id="vwClose" class="ghost-btn" data-i18n="common.close">Закрыть</button></div>
+    </div>
+  </div>
+
+  <!-- Участники и роли -->
+  <div id="membersModal" class="modal hidden">
+    <div class="modal-card members-card">
+      <div id="mbTitle" class="modal-title center" data-i18n="members.title">Участники</div>
+      <div id="membersList" class="members"></div>
+      <div class="row"><button id="mbClose" class="ghost-btn" data-i18n="common.close">Закрыть</button></div>
+    </div>
+  </div>
+
+  <!-- Инфо о канале/группе (как в Telegram) -->
+  <div id="roomInfoScreen" class="settings-screen hidden">
+    <div class="settings-card">
+      <div class="settings-head">
+        <button id="riBack" class="ghost-btn" data-i18n="common.back">‹ Назад</button>
+        <div class="settings-name" style="flex:1;text-align:center" data-i18n="info.title">Информация</div>
+        <div style="width:74px"></div>
+      </div>
+      <div class="ri-hero">
+        <div id="riAva" class="ri-ava">📢</div>
+        <div id="riName" class="ri-name">—</div>
+        <div id="riSub" class="ri-sub">—</div>
+      </div>
+      <div class="ri-actions">
+        <button id="riAdd" class="ri-act"><span class="ri-ic">👤➕</span><span data-i18n="info.add">Добавить</span></button>
+        <button id="riMute" class="ri-act"><span class="ri-ic">🔔</span><span id="riMuteLbl" data-i18n="info.notif">Уведомления</span></button>
+        <button id="riMembers" class="ri-act"><span class="ri-ic">👥</span><span data-i18n="info.members">Участники</span></button>
+      </div>
+      <div id="riInfoBlock" class="ri-block hidden">
+        <div class="ri-block-t" data-i18n="info.info">информация</div>
+        <div id="riDesc" class="ri-desc"></div>
+      </div>
+      <!-- Управление группой (владелец/админ) — строки как в Telegram -->
+      <div id="riManageList" class="set-list hidden">
+        <button class="set-row" id="riRowType"><span class="ic tile" style="background:#5b8cff">👥</span><span class="lbl" data-i18n="gset.type">Тип группы</span><span class="val" id="riValType"></span><span class="chev">›</span></button>
+        <button class="set-row" id="riRowPerms"><span class="ic tile" style="background:#e8a13a">🔑</span><span class="lbl" data-i18n="gset.perms">Разрешения</span><span class="val" id="riValPerms"></span><span class="chev">›</span></button>
+        <button class="set-row" id="riRowAutodel"><span class="ic tile" style="background:#42b06b">⏳</span><span class="lbl" data-i18n="gset.autodel">Автоудаление</span><span class="val" id="riValAutodel"></span><span class="chev">›</span></button>
+        <button class="set-row" id="riRowHistory"><span class="ic tile" style="background:#7c5cff">🕘</span><span class="lbl" data-i18n="gset.history">История для новых</span><span class="val" id="riValHistory"></span><span class="chev">›</span></button>
+      </div>
+      <!-- Общие строки -->
+      <div id="riCommonList" class="set-list">
+        <button class="set-row" id="riRowMembers"><span class="ic tile" style="background:#54b361">👥</span><span class="lbl" data-i18n="info.members">Участники</span><span class="val" id="riValMembers"></span><span class="chev">›</span></button>
+        <button class="set-row hidden" id="riRowLink"><span class="ic tile" style="background:#3aa0e0">🔗</span><span class="lbl" data-i18n="info.link">Пригласительная ссылка</span><span class="chev">›</span></button>
+      </div>
+      <div id="riLinkBlock" class="ri-block hidden">
+        <div class="ri-block-t" data-i18n="info.link">ссылка</div>
+        <div class="ri-link-row"><span id="riLink" class="ri-link mono"></span><button id="riCopy" class="icon" data-i18n-title="common.copy" title="Скопировать">📋</button></div>
+      </div>
+      <div class="ri-foot">
+        <button id="riJoin" class="primary wide hidden" data-i18n="info.join">Вступить</button>
+        <button id="riLeave" class="danger-btn wide hidden" data-i18n="info.leave">Выйти</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Управление группой: тип, разрешения, медленный режим, автоудаление, история -->
+  <div id="groupSetModal" class="modal hidden">
+    <div class="modal-card gset-card">
+      <div class="modal-title" data-i18n="gset.title">Управление группой</div>
+      <div class="gset-scroll">
+        <div class="gset-sec" data-i18n="gset.type">Тип группы</div>
+        <div class="gset-group">
+          <label class="gset-opt"><input type="radio" name="gsType" id="gsPrivate"><span class="go-txt"><b data-i18n="gset.private">Частная</b><small data-i18n="gset.privateHint">Вступить только по приглашению или ссылке</small></span></label>
+          <label class="gset-opt"><input type="radio" name="gsType" id="gsPublic"><span class="go-txt"><b data-i18n="gset.public">Публичная</b><small data-i18n="gset.publicHint">Доступна в поиске, вступить может любой</small></span></label>
+        </div>
+
+        <div class="gset-sec" data-i18n="gset.perms">Разрешения участников</div>
+        <div class="gset-group">
+          <label class="gset-row"><span class="gr-lbl" data-i18n="gset.p.send">Отправка сообщений</span><input type="checkbox" class="tgl" id="gpSendMessages"></label>
+          <label class="gset-row"><span class="gr-lbl" data-i18n="gset.p.media">Отправка медиафайлов</span><input type="checkbox" class="tgl" id="gpSendMedia"></label>
+          <label class="gset-row"><span class="gr-lbl" data-i18n="gset.p.add">Добавление участников</span><input type="checkbox" class="tgl" id="gpAddMembers"></label>
+          <label class="gset-row"><span class="gr-lbl" data-i18n="gset.p.pin">Закрепление сообщений</span><input type="checkbox" class="tgl" id="gpPinMessages"></label>
+          <label class="gset-row"><span class="gr-lbl" data-i18n="gset.p.info">Изменение профиля группы</span><input type="checkbox" class="tgl" id="gpChangeInfo"></label>
+          <label class="gset-row"><span class="gr-lbl" data-i18n="gset.p.tag">Изменение своего тега</span><input type="checkbox" class="tgl" id="gpChangeOwnTag"></label>
+        </div>
+
+        <div class="gset-sec" data-i18n="gset.slow">Медленный режим</div>
+        <select id="gsSlow" class="gset-sel">
+          <option value="0" data-i18n="gset.slow.off">Выкл</option>
+          <option value="5">5 с</option><option value="10">10 с</option><option value="30">30 с</option>
+          <option value="60">1 мин</option><option value="300">5 мин</option><option value="900">15 мин</option><option value="3600">1 ч</option>
+        </select>
+
+        <div class="gset-sec" data-i18n="gset.autodel">Автоудаление сообщений</div>
+        <select id="gsRet" class="gset-sel">
+          <option value="forever" data-i18n="gset.autodel.off">Выкл</option>
+          <option value="1d" data-i18n="gset.autodel.1d">Через 1 день</option>
+          <option value="1w" data-i18n="gset.autodel.1w">Через 1 неделю</option>
+          <option value="1mo" data-i18n="gset.autodel.1mo">Через 1 месяц</option>
+        </select>
+        <div class="gset-note" data-i18n="gset.autodel.note">Сервер удаляет сообщения старше выбранного срока.</div>
+
+        <div class="gset-sec" data-i18n="gset.history">История для новых участников</div>
+        <div class="gset-group">
+          <label class="gset-row"><span class="gr-lbl" data-i18n="gset.history.show">Показывать историю новым</span><input type="checkbox" class="tgl" id="gsHistory"></label>
+        </div>
+      </div>
+      <div class="row"><button id="gsSave" class="primary" data-i18n="common.save">Сохранить</button><button id="gsCancel" class="ghost-btn" data-i18n="common.cancel">Отмена</button></div>
+    </div>
+  </div>
+
+  <!-- 🎁 Магазин подарков -->
+  <div id="giftShopModal" class="modal hidden">
+    <div class="modal-card gset-card">
+      <div class="modal-title" data-i18n="gift.shop">Отправить подарок</div>
+      <div id="gsRecipient" class="hint" style="margin-bottom:8px"></div>
+      <div id="giftGrid" class="gift-grid"></div>
+      <div id="giftSendBox" class="hidden">
+        <input id="giftMsg" type="text" maxlength="200" data-i18n-ph="gift.msgPh" placeholder="Добавить сообщение (по желанию)…" />
+        <label class="chk"><input id="giftAnon" type="checkbox" /> <span data-i18n="gift.anon">Отправить анонимно</span></label>
+      </div>
+      <div class="row">
+        <button id="giftSendBtn" class="primary" disabled data-i18n="gift.send">Отправить</button>
+        <button id="giftCancel" class="ghost-btn" data-i18n="common.cancel">Отмена</button>
+      </div>
+      <div id="giftBalance" class="hint" style="margin-top:6px"></div>
+    </div>
+  </div>
+
+  <!-- 🎁 Просмотр подарка: кто отправил + анимация призраков -->
+  <div id="giftInfoModal" class="modal hidden">
+    <div class="modal-card gift-info-card">
+      <div id="giftInfoStage" class="gift-info-stage"></div>
+      <div id="giftInfoName" class="gift-info-name"></div>
+      <div id="giftInfoRows" class="gift-info-rows"></div>
+      <div class="row"><button id="giftInfoClose" class="primary" data-i18n="gift.close">Закрыть</button></div>
+    </div>
+  </div>
+
+  <!-- 🎁 Мои подарки -->
+  <div id="myGiftsModal" class="modal hidden">
+    <div class="modal-card gset-card">
+      <div class="modal-title" data-i18n="gift.mine">Мои подарки</div>
+      <div id="myGiftsList" class="gsrch-list"></div>
+      <div class="row"><button id="myGiftsClose" class="ghost-btn" data-i18n="common.close">Закрыть</button></div>
+    </div>
+  </div>
+
+  <!-- G5: поиск публичных групп по реестру -->
+  <div id="groupSearchModal" class="modal hidden">
+    <div class="modal-card gset-card">
+      <div class="modal-title" data-i18n="gsrch.title">Поиск публичных групп</div>
+      <input id="gsrchInput" type="text" data-i18n-ph="gsrch.ph" placeholder="Например: рыбалка" autocomplete="off" />
+      <div id="gsrchList" class="gsrch-list"></div>
+      <div class="row"><button id="gsrchClose" class="ghost-btn" data-i18n="common.close">Закрыть</button></div>
+    </div>
+  </div>
+
+  <!-- Универсальный модал -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-card">
+      <div id="modalTitle" class="modal-title"></div>
+      <input id="modalInput" type="text" />
+      <div id="modalHint" class="hint"></div>
+      <div class="row"><button id="modalOk" class="primary">OK</button><button id="modalCancel" class="ghost-btn" data-i18n="common.cancel">Отмена</button></div>
+    </div>
+  </div>
+
+  <!-- Удаление сообщения (у меня / у всех) -->
+  <div id="delModal" class="modal hidden">
+    <div class="modal-card">
+      <div id="delTitle" class="modal-title" data-i18n="del.title">Удалить сообщение?</div>
+      <label class="chk" id="delAllRow"><input id="delAll" type="checkbox" /> <span data-i18n="del.forEveryone">Удалить у всех (у собеседника тоже)</span></label>
+      <div class="row"><button id="delConfirm" class="danger" data-i18n="del.delete">Удалить</button><button id="delCancel" class="ghost-btn" data-i18n="common.cancel">Отмена</button></div>
+    </div>
+  </div>
+
+  <!-- Контекстное меню сообщения (ПКМ) -->
+  <div id="ctxMenu" class="ctx-menu hidden"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

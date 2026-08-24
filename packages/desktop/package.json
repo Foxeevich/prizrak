@@ -1,0 +1,61 @@
+{
+  "name": "@prizrak/desktop",
+  "version": "2.1.5",
+  "type": "module",
+  "description": "Prizrak Desktop — Electron-клиент для macOS и Windows",
+  "author": "Prizrak",
+  "main": "main.js",
+  "scripts": {
+    "sync": "node ../../scripts/sync-desktop-lib.mjs",
+    "prestart": "node ../../scripts/sync-desktop-lib.mjs",
+    "start": "electron .",
+    "predist:mac": "node ../../scripts/sync-desktop-lib.mjs",
+    "dist:mac": "electron-builder --mac",
+    "predist:win": "node ../../scripts/sync-desktop-lib.mjs",
+    "dist:win": "electron-builder --win",
+    "predist:linux": "node ../../scripts/sync-desktop-lib.mjs",
+    "dist:linux": "electron-builder --linux",
+    "predist:all": "node ../../scripts/sync-desktop-lib.mjs",
+    "dist:all": "electron-builder -mwl"
+  },
+  "dependencies": {
+    "@noble/ciphers": "^1.2.1",
+    "@noble/curves": "^1.8.1",
+    "@noble/hashes": "^1.7.1",
+    "openpgp": "^6.1.0",
+    "ws": "^8.18.0",
+    "qrcode": "^1.5.4"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "org.prizrak.desktop",
+    "productName": "Prizrak",
+    "directories": { "buildResources": "build" },
+    "files": ["main.js", "preload.cjs", "updater.js", "renderer/**", "lib/**"],
+    "afterPack": "./build/afterPack.cjs",
+    "protocols": [{ "name": "Prizrak", "schemes": ["prizrak"] }],
+    "mac": {
+      "target": ["dmg", "zip"],
+      "category": "public.app-category.social-networking",
+      "icon": "build/icon.png",
+      "identity": null
+    },
+    "win": {
+      "artifactName": "${productName}-${version}.${ext}",
+      "target": [
+        { "target": "nsis", "arch": ["x64"] },
+        { "target": "portable", "arch": ["x64"] }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": { "artifactName": "${productName}-Setup-${version}.${ext}" },
+    "portable": { "artifactName": "${productName}-Portable-${version}.${ext}" },
+    "linux": {
+      "target": [{ "target": "AppImage", "arch": ["x64"] }],
+      "icon": "build/icon.png"
+    }
+  }
+}

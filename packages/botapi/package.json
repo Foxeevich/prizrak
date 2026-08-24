@@ -1,0 +1,11 @@
+{
+  "name": "@prizrak/botapi",
+  "version": "2.0.0",
+  "type": "module",
+  "main": "src/botapi-server.js",
+  "description": "Prizrak Bot API — упрощённый аналог Telegram Bot API, ставится на каждый homeserver",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node test/botapi.mjs"
+  }
+}

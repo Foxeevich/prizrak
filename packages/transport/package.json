@@ -1,0 +1,7 @@
+{
+  "name": "@prizrak/transport",
+  "version": "2.0.0",
+  "type": "module",
+  "main": "src/stealth.js",
+  "description": "Prizrak stealth transport — маскировка звонков/данных под обычный HTTPS для обхода DPI/ТСПУ"
+}

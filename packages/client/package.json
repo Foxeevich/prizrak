@@ -1,0 +1,7 @@
+{
+  "name": "@prizrak/client",
+  "version": "2.0.0",
+  "type": "module",
+  "main": "src/client.js",
+  "description": "Prizrak client — идентичность, сессии, E2E-переписка поверх homeserver'а"
+}

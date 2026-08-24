@@ -1,0 +1,8 @@
+{
+  "domain": "chat.example.org",
+  "port": 8801,
+  "storePath": "./data/store.json",
+  "registrationEnabled": true,
+  "registrationInviteCode": null,
+  "admin": "root"
+}

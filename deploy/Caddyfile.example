@@ -1,0 +1,27 @@
+# Caddyfile.example — reverse-proxy с автоматическим TLS (Let's Encrypt) для
+# homeserver'а Prizrak. Caddy сам получит и продлит сертификат для вашего домена.
+#
+# 1. Пропишите A/AAAA-запись домена на IP сервера.
+# 2. Замените chat.example.org на свой домен.
+# 3. Запустите homeserver на 127.0.0.1:8801 (./prizrak-deploy.sh start).
+# 4. caddy run --config Caddyfile
+#
+# Discovery-эндпоинт /.well-known/prizrak/server отдаётся самим сервером, поэтому
+# отдельная настройка не нужна — он проксируется вместе со всем остальным.
+
+chat.example.org {
+    encode zstd gzip
+
+    # Весь трафик homeserver'а (client-server + server-server федерация).
+    reverse_proxy 127.0.0.1:8801
+
+    header {
+        Strict-Transport-Security "max-age=31536000;"
+        X-Content-Type-Options "nosniff"
+    }
+}
+
+# Пример для нескольких доменов на одной машине — просто добавьте ещё блок:
+# chat2.example.net {
+#     reverse_proxy 127.0.0.1:8802
+# }
