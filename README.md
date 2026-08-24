@@ -2,8 +2,8 @@
   <img src="ghost-250.svg" alt="Prizrak" width="120"/>
 </p>
 
-<h1 align="center">Prizrak — Призрак</h1>
-WebSite: <a href="https://prizrak.im">Prizrak.im</a>
+<h1 align="center">Prizrak — Призрак</h1><br>
+WebSite: <a href="https://prizrak.im">Prizrak.im</a><br><hr>
 
 <p align="center">
   <b>Censorship-resistant, end-to-end encrypted messenger with an integrated VPN, server federation, a hidden-node relay network, voice/video calls and a Bot API.</b><br/>
