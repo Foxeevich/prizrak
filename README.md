@@ -3,7 +3,7 @@
 </p>
 
 <h1 align="center">Prizrak — Призрак</h1><br>
-WebSite: <a href="https://prizrak.im">Prizrak.im</a><br><hr>
+<center>WebSite: <a href="https://prizrak.im">Prizrak.im</a></center><br><hr>
 
 <p align="center">
   <b>Censorship-resistant, end-to-end encrypted messenger with an integrated VPN, server federation, a hidden-node relay network, voice/video calls and a Bot API.</b><br/>
