@@ -1,0 +1,61 @@
+name: "🐞 Bug report / Отчёт об ошибке"
+description: "Report a reproducible bug / Сообщить о воспроизводимой ошибке"
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! **Never paste private keys, tokens, passwords or personal data.**
+        Спасибо за отчёт! **Не вставляйте приватные ключи, токены, пароли и личные данные.**
+  - type: dropdown
+    id: component
+    attributes:
+      label: "Component / Компонент"
+      options:
+        - "Desktop client (Electron)"
+        - "Mobile client (Android/iOS)"
+        - "Homeserver / server"
+        - "Hidden node (deaddrop)"
+        - "VPN"
+        - "Other / Другое"
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: "What happened? / Что произошло?"
+      description: "Describe the bug clearly. / Опишите ошибку понятно."
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: "Steps to reproduce / Шаги воспроизведения"
+      placeholder: |
+        1. …
+        2. …
+        3. …
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: "Expected behavior / Ожидаемое поведение"
+  - type: input
+    id: version
+    attributes:
+      label: "Version / Версия"
+      placeholder: "e.g. desktop 2.1.5 / mobile 2.1.9 / server"
+    validations:
+      required: true
+  - type: textarea
+    id: env
+    attributes:
+      label: "Environment / Окружение"
+      placeholder: "OS, device, Node.js version… / ОС, устройство, версия Node.js…"
+  - type: textarea
+    id: logs
+    attributes:
+      label: "Logs / Логи"
+      description: "Relevant logs (redact anything sensitive). / Логи (уберите всё чувствительное)."
+      render: shell

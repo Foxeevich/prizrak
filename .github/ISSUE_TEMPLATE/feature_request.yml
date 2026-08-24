@@ -1,0 +1,35 @@
+name: "✨ Feature request / Предложение фичи"
+description: "Suggest an idea or improvement / Предложить идею или улучшение"
+labels: ["enhancement"]
+body:
+  - type: dropdown
+    id: component
+    attributes:
+      label: "Component / Компонент"
+      options:
+        - "Desktop client (Electron)"
+        - "Mobile client (Android/iOS)"
+        - "Homeserver / server"
+        - "Hidden node (deaddrop)"
+        - "VPN"
+        - "Federation / Bot API"
+        - "Other / Другое"
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: "Problem / Проблема"
+      description: "What problem does this solve? / Какую проблему это решает?"
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: "Proposed solution / Предлагаемое решение"
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: "Alternatives considered / Рассмотренные альтернативы"
