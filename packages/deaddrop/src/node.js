@@ -14,8 +14,12 @@ import { Registry, makeRecord } from './registry.js';
 import { Directory } from './directory.js';
 import { makeHealer } from './healer.js';
 import { createServer } from './server.js';
+import { Bootstrap, dohChannel, httpsChannel } from './bootstrap.js';
 
-export const VERSION = '0.8.1';
+export const VERSION = '0.9.0';
+// Корень доверия к авто-бутстрапу = публичный ключ мейнтейнера (тот же, что подписывает
+// обновления). Подделать подписанный список сидов нельзя, откуда бы он ни пришёл.
+const BOOT_PUB = (process.env.DD_BOOT_PUB || '1b50aa53633c2b4922f8a1deb3f3dea71f350fac80aae5f6061d9b7abc7a1a2e').trim();
 const num = (v) => (v && Number(v) > 0 ? Number(v) : undefined);
 const log = (...a) => { try { console.log(...a); } catch {} };
 
@@ -40,6 +44,19 @@ export function startNode(opts = {}) {
   const registry = new Registry(join(dataDir, 'registry.json'));
   const publicUrl = (opts.publicUrl || process.env.DD_PUBLIC || `http://127.0.0.1:${port}`).replace(/\/$/, '');
   const seeds = (opts.seeds || process.env.DD_SEEDS || '').split(',').map((s) => s.trim().replace(/\/$/, '')).filter(Boolean);
+  // Авто-бутстрап: подписанный список сид-узлов тянется из DNS-TXT(DoH) и HTTPS —
+  // оператору НИЧЕГО прописывать не нужно (DD_SEEDS остаётся как ручное дополнение/оверрайд).
+  // Отключить: DD_BOOT=0. Переопределить каналы: DD_BOOT_DOH / DD_BOOT_HTTPS / DD_BOOT_PUB.
+  const bootOff = process.env.DD_BOOT === '0' || process.env.DD_BOOT === 'false';
+  const boot = bootOff ? null : new Bootstrap({
+    maintainerPubHex: BOOT_PUB,
+    channels: [
+      dohChannel(process.env.DD_BOOT_DOH || 'boot.prizrak.im'),
+      httpsChannel(process.env.DD_BOOT_HTTPS || 'https://prizrak.im/.well-known/prizrak-boot.json'),
+    ],
+    cachePath: join(dataDir, 'bootstrap.json'),
+    log,
+  });
   // Фаза 6: метка домена отказа (оператор/ASN/страна) — для anti-Sybil diversity в размещении.
   const group = opts.group || process.env.DD_GROUP || '';
   const ownRecord = () => makeRecord(identity, [publicUrl], undefined, group);
@@ -70,7 +87,8 @@ export function startNode(opts = {}) {
     log(`  │ ID также записан в: ${join(dataDir, 'node-id.txt')}`);
     log('  └─────────────────────────────────────────────────────────────────');
     log('');
-    if (seeds.length) log(`[deaddrop] сиды реестра: ${seeds.join(', ')}`);
+    if (seeds.length) log(`[deaddrop] сиды (заданы вручную): ${seeds.join(', ')}`);
+    if (boot) log('[deaddrop] авто-бутстрап сидов включён (DNS-TXT + HTTPS, ключ мейнтейнера) — конфиг не требуется');
     if (isPrivate) {
       log('[deaddrop] 🔒 ПРИВАТНЫЙ (bridge) узел: в общий реестр НЕ анонсируется.');
       log('[deaddrop] билет-мост (передайте доверенным серверам в deaddropBridges):');
@@ -103,7 +121,7 @@ export function startNode(opts = {}) {
   async function gossipOnce() {
     const self = ownRecord();
     registry.upsert(self); // heartbeat (свежий addedAt)
-    const peers = new Set(seeds);
+    const peers = new Set([...seeds, ...(boot ? boot.seeds() : [])]);
     for (const n of registry.nodes()) for (const e of n.endpoints) peers.add(e.replace(/\/$/, ''));
     peers.delete(publicUrl);
     for (const base of peers) {
@@ -120,6 +138,15 @@ export function startNode(opts = {}) {
   let gossip = null;
   // Приватный (bridge) узел в госсипе не участвует: не анонсирует себя и не «светится» соединениями.
   if (opts.gossip !== false && !isPrivate) { gossipOnce(); gossip = setInterval(gossipOnce, gossipMs); gossip.unref?.(); }
+  // Авто-бутстрап: разбираем подписанный список сидов (кэш из bootstrap.json — сразу,
+  // свежий — по сети), при успехе тут же анонсируемся новым сидам. Не блокирует старт.
+  let bootTimer = null;
+  if (boot && opts.gossip !== false && !isPrivate) {
+    const refresh = () => boot.resolve().then((s) => { if (s.length) gossipOnce(); }).catch(() => {});
+    refresh();
+    bootTimer = setInterval(refresh, Number(process.env.DD_BOOT_MS || 6 * 3600 * 1000));
+    bootTimer.unref?.();
+  }
 
   // Самоисцеление реплик (Фазы 4–5): backfill до RF, ACK-протухание, снятие лишних копий.
   const rf = Number(opts.rf || process.env.DD_RF || 4);
