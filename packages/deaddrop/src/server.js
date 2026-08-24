@@ -66,7 +66,10 @@ const sendJSON = (res, code, obj) => { const b = Buffer.from(JSON.stringify(obj)
 const sendBin = (res, code, buf) => { res.writeHead(code, { 'content-type': 'application/octet-stream', 'content-length': buf.length }); res.end(buf); };
 const decoy = (res, code = 200) => { const b = Buffer.from(DECOY); res.writeHead(code, { server: 'nginx', 'content-type': 'text/html; charset=utf-8', 'content-length': b.length }); res.end(b); };
 
-export function createServer({ store, identity, registry = null, directory = null, version = '0.1.0', startedAt = Date.now(), maxBlobBytes = 16 * 1024 * 1024, listPageMax = 24, listRate = null, powBits = 0 }) {
+export function createServer({ store, identity, registry = null, directory = null, version = '0.1.0', startedAt = Date.now(), maxBlobBytes = 16 * 1024 * 1024, listPageMax = 24, listRate = null, powBits = 0, statusKey = '' }) {
+  // Удалённый доступ к /status: разрешён с localhost ЛИБО при совпадении секретного
+  // ключа (?key=…). Без ключа чужим отдаётся «обманка» (стелс сохраняется).
+  const statusAllowed = (req, url) => isLocal(req) || (statusKey && url.searchParams.get('key') === statusKey);
   // Фаза 6c: анти-энумерация листингов (rate-limit по IP + частичное представление).
   const listLimiter = new RateLimiter(listRate || { capacity: 20, refillPerSec: 0.5 });
   return http.createServer(async (req, res) => {
@@ -76,7 +79,7 @@ export function createServer({ store, identity, registry = null, directory = nul
 
       // Локальная статус-страница оператора (в браузере, без Electron). Только с localhost.
       if (req.method === 'GET' && path === '/status') {
-        if (!isLocal(req)) return decoy(res, 404);
+        if (!statusAllowed(req, url)) return decoy(res, 404);
         const b = Buffer.from(STATUS_HTML);
         res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'content-length': b.length });
         return res.end(b);
@@ -85,7 +88,7 @@ export function createServer({ store, identity, registry = null, directory = nul
       // Код привязки к аккаунту оператора (Фаза 7). Только с localhost (оператор у своей машины).
       // Возвращает строку-код: base64url(JSON{relayId,userId,sig}) — её оператор вставит в приложении.
       if (req.method === 'GET' && path === '/dd/claim') {
-        if (!isLocal(req)) return decoy(res, 404);
+        if (!statusAllowed(req, url)) return decoy(res, 404);
         const userId = (url.searchParams.get('user') || '').trim();
         if (!/^[a-z0-9_.-]{1,64}:[a-z0-9.-]{3,}$/i.test(userId)) return sendJSON(res, 400, { ok: false, reason: 'нужен ник вида user:domain' });
         const sig = signNodeClaim(identity.priv, identity.nodeId, userId);

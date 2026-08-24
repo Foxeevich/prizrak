@@ -7,6 +7,7 @@
 // Самоисцеление (Фазы 4–5): DD_RF — число копий (4); DD_HEAL_MS — период исцеления (20с).
 import { join } from 'node:path';
 import { homedir } from 'node:os';
+import { writeFileSync } from 'node:fs';
 import { loadOrCreateIdentity } from './identity.js';
 import { Store } from './store.js';
 import { Registry, makeRecord } from './registry.js';
@@ -14,7 +15,7 @@ import { Directory } from './directory.js';
 import { makeHealer } from './healer.js';
 import { createServer } from './server.js';
 
-export const VERSION = '0.8.0';
+export const VERSION = '0.8.1';
 const num = (v) => (v && Number(v) > 0 ? Number(v) : undefined);
 const log = (...a) => { try { console.log(...a); } catch {} };
 
@@ -24,6 +25,9 @@ export function startNode(opts = {}) {
   const host = opts.host || process.env.DD_HOST || '0.0.0.0';
 
   const identity = loadOrCreateIdentity(join(dataDir, 'identity.json'));
+  // Полный Node ID (relayId) — в файл рядом с данными, чтобы оператор мог прочитать
+  // его на удалённой машине без открытия /status (например, cat .../node-id.txt).
+  try { writeFileSync(join(dataDir, 'node-id.txt'), identity.nodeId + '\n'); } catch {}
   const store = new Store(dataDir, {
     maxBytes: opts.maxBytes || num(process.env.DD_MAX_BYTES),
     maxPerMailboxBytes: opts.maxPerMailboxBytes || num(process.env.DD_MAILBOX_BYTES),
@@ -49,10 +53,23 @@ export function startNode(opts = {}) {
 
   const listPageMax = Number(opts.listPageMax || process.env.DD_LIST_MAX || 24);
   const powBits = Number(opts.powBits ?? process.env.DD_POW_BITS ?? 0); // 0 = PoW выключен (аддитивно)
-  const server = createServer({ store, identity, registry, directory, version: VERSION, startedAt, maxBlobBytes: store.maxBlobBytes, listPageMax, listRate: opts.listRate || null, powBits });
+  // Удалённый доступ к /status и /dd/claim по секретному ключу (иначе — только localhost).
+  const statusKey = opts.statusKey || process.env.DD_STATUS_KEY || '';
+  const server = createServer({ store, identity, registry, directory, version: VERSION, startedAt, maxBlobBytes: store.maxBlobBytes, listPageMax, listRate: opts.listRate || null, powBits, statusKey });
   server.listen(port, host, () => {
-    log(`[deaddrop] v${VERSION} узел ${identity.nodeId.slice(0, 16)}… слушает http://${host}:${port} · data=${dataDir}`);
-    log(`[deaddrop] статус в браузере: http://127.0.0.1:${port}/status`);
+    log(`[deaddrop] v${VERSION} слушает http://${host}:${port} · data=${dataDir}`);
+    // Полный Node ID — заметным блоком, чтобы был виден в `journalctl -u prizrak-node`
+    // и в `systemctl status prizrak-node` (последние строки журнала).
+    log('');
+    log('  ┌─ PRIZRAK NODE ──────────────────────────────────────────────────');
+    log('  │ NODE ID (relayId) — для регистрации узла:');
+    log(`  │   ${identity.nodeId}`);
+    log(`  │ Статус (локально): http://127.0.0.1:${port}/status`);
+    if (statusKey) log(`  │ Статус (удалённо): http://<ВАШ_IP>:${port}/status?key=${statusKey}`);
+    log(`  │ Код привязки к аккаунту: curl "http://127.0.0.1:${port}/dd/claim?user=НИК:ДОМЕН"`);
+    log(`  │ ID также записан в: ${join(dataDir, 'node-id.txt')}`);
+    log('  └─────────────────────────────────────────────────────────────────');
+    log('');
     if (seeds.length) log(`[deaddrop] сиды реестра: ${seeds.join(', ')}`);
     if (isPrivate) {
       log('[deaddrop] 🔒 ПРИВАТНЫЙ (bridge) узел: в общий реестр НЕ анонсируется.');
